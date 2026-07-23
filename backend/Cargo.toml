@@ -1,0 +1,23 @@
+[package]
+name = "queue-care-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7.5", features = ["macros"] }
+tokio = { version = "1.37.0", features = ["full"] }
+sqlx = { version = "0.7.4", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "macros"] }
+serde = { version = "1.0.198", features = ["derive"] }
+serde_json = "1.0.116"
+jsonwebtoken = "9.3.0"
+argon2 = "0.5.3"
+uuid = { version = "1.8.0", features = ["v4", "serde"] }
+chrono = { version = "0.4.38", features = ["serde"] }
+dotenvy = "0.15.7"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+tower-http = { version = "0.5.2", features = ["cors", "trace"] }
+rand = "0.8.5"
+validator = { version = "0.18.1", features = ["derive"] }
+sha2 = "0.10.8"
+hex = "0.4.3"
