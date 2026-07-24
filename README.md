@@ -35,6 +35,7 @@ React Native App
 ## 🏗 Directory Structures
 
 ### Go Backend
+
 * `backend/main.go` - Entry point bootstrapping Fiber, logging, CORS, database connectivity, and router.
 * `backend/config/config.go` - Environment configuration parser.
 * `backend/errors/errors.go` - Enforced structured JSON errors.
@@ -48,6 +49,7 @@ React Native App
 * `backend/router/router.go` - Router tree groups.
 
 ### React Native Frontend
+
 * `Queue-care/src/components/` - Inputs (Phone, OTP, Password), Buttons, Checklists.
 * `Queue-care/src/screens/` - PhoneAuthScreen, OtpVerificationScreen, SetPasswordScreen, HomeScreen.
 * `Queue-care/src/navigation/` - Stack navigators & Root persistent state gate.
@@ -61,29 +63,34 @@ React Native App
 ## 🚀 Getting Started
 
 ### 1. Database Configuration
+
 Ensure your PostgreSQL database is running. In your case, it is already configured to connect to your Supabase instance:
-```env
-DATABASE_URL=postgresql://postgres:Selva%402007cr007@db.plpuxsqudcprblwdypjj.supabase.co:5432/postgres
-```
+
 Inside the password, the special character `@` has been URL-encoded as `%40` so standard parsers do not fail.
 
 ### 2. Launch the Backend
+
 Navigate to the backend directory and launch the Go server:
+
 ```bash
 cd backend
 # Build and start the Fiber app (runs database migrations on startup)
 go run .
 ```
+
 By default, the server binds to port `8080`.
 *Note: In development mode (`APP_ENV=development`), the generated OTP is logged directly to the server terminal console for testing.*
 
 ### 3. Launch the Frontend Mobile App
+
 Navigate to the frontend directory:
+
 ```bash
 cd Queue-care
 npm install
 npm run start
 ```
+
 *Note: The frontend base API URL dynamically adapts based on the simulator platform (`127.0.0.1` for iOS, and `10.0.2.2` to access the host machine's port 8080 from the Android emulator). Ensure these parameters match your local networking inside `src/constants/api.ts`.*
 
 ---
@@ -91,7 +98,9 @@ npm run start
 ## 🧪 Testing
 
 ### Go Backend Tests
+
 Run the Go unit tests verifying phone normalization, hashing, and token checks:
+
 ```bash
 cd backend
 go test ./...
