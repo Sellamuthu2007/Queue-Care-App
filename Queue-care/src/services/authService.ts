@@ -1,45 +1,74 @@
-import { apiRequest } from './api';
-import { SendOtpResponse, VerifyOtpResponse, AuthResponse, LogoutResponse } from '../types/auth';
+import { Platform } from 'react-native';
+import { supabase } from './supabase';
+import { User } from '../types/user';
 
-export const sendOtp = async (phone: string): Promise<SendOtpResponse> => {
-  return await apiRequest('/auth/send-otp', {
-    method: 'POST',
-    useAuth: false,
-    body: JSON.stringify({ phone }),
-  });
+export const login = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw { code: 'AUTH_ERROR', message: error.message };
+  if (!data.user || !data.session) throw { code: 'AUTH_ERROR', message: 'Login failed' };
+
+  const user: User = {
+    id: data.user.id,
+    email: data.user.email || email,
+    role: (data.user.user_metadata?.role as User['role']) || 'patient',
+  };
+
+  return {
+    user,
+    access_token: data.session.access_token,
+    refresh_token: data.session.refresh_token,
+  };
 };
 
-export const verifyOtp = async (phone: string, otp: string): Promise<VerifyOtpResponse> => {
-  return await apiRequest('/auth/verify-otp', {
-    method: 'POST',
-    useAuth: false,
-    body: JSON.stringify({ phone, otp }),
+export const signUp = async (email: string, password: string, name: string) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { name, role: 'patient' } },
   });
+  if (error) throw { code: 'AUTH_ERROR', message: error.message };
+  if (!data.user) throw { code: 'AUTH_ERROR', message: 'Sign up failed' };
+
+  const user: User = {
+    id: data.user.id,
+    email: data.user.email || email,
+    role: (data.user.user_metadata?.role as User['role']) || 'patient',
+  };
+
+  const access_token = data.session?.access_token || '';
+  const refresh_token = data.session?.refresh_token || '';
+
+  return { user, access_token, refresh_token };
 };
 
-export const setPassword = async (verificationToken: string, password: string): Promise<AuthResponse> => {
-  return await apiRequest('/auth/set-password', {
-    method: 'POST',
-    useAuth: false,
-    headers: {
-      Authorization: `Bearer ${verificationToken}`,
+export const signInWithGoogle = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: Platform.OS === 'web' ? window.location.origin : undefined,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
     },
-    body: JSON.stringify({ password }),
   });
+  if (error) throw { code: 'AUTH_ERROR', message: error.message };
+  return data;
 };
 
-export const login = async (phone: string, password: string): Promise<AuthResponse> => {
-  return await apiRequest('/auth/login', {
-    method: 'POST',
-    useAuth: false,
-    body: JSON.stringify({ phone, password }),
-  });
+export const logout = async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw { code: 'AUTH_ERROR', message: error.message };
 };
 
-export const logout = async (refreshToken: string): Promise<LogoutResponse> => {
-  return await apiRequest('/auth/logout', {
-    method: 'POST',
-    useAuth: true,
-    body: JSON.stringify({ refresh_token: refreshToken }),
+export const getSession = async () => {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw { code: 'AUTH_ERROR', message: error.message };
+  return data.session;
+};
+
+export const onAuthStateChange = (callback: (session: any) => void) => {
+  return supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session);
   });
 };

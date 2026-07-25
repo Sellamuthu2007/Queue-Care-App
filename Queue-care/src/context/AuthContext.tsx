@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { User } from '../types/user';
-import * as secureStorage from '../storage/secureStorage';
 import * as authService from '../services/authService';
 
 interface AuthContextType {
@@ -23,18 +22,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const initializeAuth = async () => {
     try {
       setIsLoading(true);
-      const token = await secureStorage.getAccessToken();
-      const u = await secureStorage.getUser();
-      if (token && u) {
+      const session = await authService.getSession();
+      if (session?.user) {
+        const u: User = {
+          id: session.user.id,
+          email: session.user.email || '',
+          role: (session.user.user_metadata?.role as User['role']) || 'patient',
+        };
         setUserState(u);
         setIsAuthenticated(true);
       } else {
-        await secureStorage.clearTokens();
         setUserState(null);
         setIsAuthenticated(false);
       }
     } catch {
-      await secureStorage.clearTokens();
       setUserState(null);
       setIsAuthenticated(false);
     } finally {
@@ -43,21 +44,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (accessToken: string, refreshToken: string, userData: User) => {
-    await secureStorage.saveAccessToken(accessToken);
-    await secureStorage.saveRefreshToken(refreshToken);
-    await secureStorage.saveUser(userData);
     setUserState(userData);
     setIsAuthenticated(true);
   };
 
   const logout = async () => {
     try {
-      const rt = await secureStorage.getRefreshToken();
-      if (rt) {
-        await authService.logout(rt).catch(() => {});
-      }
+      await authService.logout();
     } finally {
-      await secureStorage.clearTokens();
       setUserState(null);
       setIsAuthenticated(false);
     }
@@ -71,16 +65,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     initializeAuth();
 
-    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-      const handleLogout = () => {
+    const { data: listener } = authService.onAuthStateChange((session) => {
+      if (session?.user) {
+        const u: User = {
+          id: session.user.id,
+          email: session.user.email || '',
+          role: (session.user.user_metadata?.role as User['role']) || 'patient',
+        };
+        setUserState(u);
+        setIsAuthenticated(true);
+      } else {
         setUserState(null);
         setIsAuthenticated(false);
-      };
-      window.addEventListener('auth-logout', handleLogout);
-      return () => {
-        window.removeEventListener('auth-logout', handleLogout);
-      };
-    }
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
   }, []);
 
   return (
