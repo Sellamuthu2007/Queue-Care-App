@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 8px 30px -4px rgba(16, 27, 70, 0.12)',
-      },
+      } as any,
     }),
   },
   tab: {

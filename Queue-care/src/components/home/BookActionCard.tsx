@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 4px 12px -2px rgba(16, 27, 70, 0.05)',
-      },
+      } as any,
     }),
   },
   iconWrapper: {

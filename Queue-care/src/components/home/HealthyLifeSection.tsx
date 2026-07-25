@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 2px 8px rgba(16, 27, 70, 0.02)',
-      },
+      } as any,
     }),
   },
   cardImage: {

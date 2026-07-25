@@ -14,7 +14,7 @@ const getDevApiUrl = () => {
   return `http://${host}:8080`;
 };
 
-const DEFAULT_API_URL = 'https://silver-impalas-juggle.loca.lt';
+const DEFAULT_API_URL = '';
 
 export const API_URL = `${DEFAULT_API_URL}/api/v1`;
 console.log('[Queue Care Backend API URL]:', API_URL);

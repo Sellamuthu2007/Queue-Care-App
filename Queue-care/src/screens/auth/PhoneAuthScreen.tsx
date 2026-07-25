@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04)',
-      },
+      } as any,
     }),
   },
   header: {

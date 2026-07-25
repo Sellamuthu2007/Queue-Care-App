@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 8px 20px -4px rgba(16, 27, 70, 0.15)',
-      },
+      } as any,
     }),
   },
   gradientOverlay: {

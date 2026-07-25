@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 
 interface PasswordInputProps {
   label: string;
@@ -7,6 +8,7 @@ interface PasswordInputProps {
   onChangeText: (text: string) => void;
   error?: string;
   placeholder?: string;
+  isPassword?: boolean;
 }
 
 export const PasswordInput: React.FC<PasswordInputProps> = ({
@@ -15,6 +17,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   onChangeText,
   error,
   placeholder = 'Enter password',
+  isPassword = true,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
@@ -33,7 +36,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           style={styles.input}
           placeholder={placeholder}
           placeholderTextColor="#94A3B8"
-          secureTextEntry={secureTextEntry}
+          secureTextEntry={isPassword ? secureTextEntry : false}
           value={value}
           onChangeText={onChangeText}
           onFocus={() => setIsFocused(true)}
@@ -42,15 +45,19 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
           autoCorrect={false}
           underlineColorAndroid="transparent"
         />
-        <TouchableOpacity
-          onPress={() => setSecureTextEntry(!secureTextEntry)}
-          activeOpacity={0.7}
-          style={styles.toggleButton}
-        >
-          <Text style={styles.toggleText}>
-            {secureTextEntry ? 'Show' : 'Hide'}
-          </Text>
-        </TouchableOpacity>
+        {isPassword && (
+          <TouchableOpacity
+            onPress={() => setSecureTextEntry(!secureTextEntry)}
+            activeOpacity={0.7}
+            style={styles.toggleButton}
+          >
+            <Feather
+              name={secureTextEntry ? 'eye' : 'eye-off'}
+              size={20}
+              color="#8B5CF6"
+            />
+          </TouchableOpacity>
+        )}
       </View>
       {!!error && <Text style={styles.errorText}>{error}</Text>}
     </View>
@@ -69,6 +76,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    fontFamily: Platform.OS === 'web' ? 'Inter' : undefined,
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -81,11 +89,11 @@ const styles = StyleSheet.create({
     height: 54,
   },
   focused: {
-    borderColor: '#00796B', // Deep emerald teal active focus highlight
+    borderColor: '#8B5CF6',
     borderWidth: 1.5,
   },
   errorBorder: {
-    borderColor: '#EF4444', // Soft crimson red error border
+    borderColor: '#EF4444',
     borderWidth: 1.5,
   },
   input: {
@@ -103,11 +111,6 @@ const styles = StyleSheet.create({
   toggleButton: {
     paddingVertical: 8,
     paddingHorizontal: 4,
-  },
-  toggleText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#00796B', // Clean brand teal toggle link
   },
   errorText: {
     color: '#EF4444',

@@ -8,14 +8,25 @@ export interface AuthState {
   isLoading: boolean;
 }
 
-export interface SendOtpResponse {
+export interface LoginResponse {
   message: string;
-  exists: boolean;
+  user: User;
+  access_token: string;
+  refresh_token: string;
 }
 
-export interface VerifyOtpResponse {
+export interface GoogleLoginResponse {
   message: string;
-  verification_token: string;
+  user: User;
+  access_token: string;
+  refresh_token: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  user: User;
+  access_token: string;
+  refresh_token: string;
 }
 
 export interface AuthResponse {

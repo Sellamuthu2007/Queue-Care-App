@@ -40,21 +40,21 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#0D9488',
+    backgroundColor: '#7C3AED',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    shadowColor: '#0D9488',
+    shadowColor: '#7C3AED',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 3,
   },
   disabled: {
-    backgroundColor: '#99F6E4',
+    backgroundColor: '#DDD6FE',
     shadowOpacity: 0,
     elevation: 0,
   },

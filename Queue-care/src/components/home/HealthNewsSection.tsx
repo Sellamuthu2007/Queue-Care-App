@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
       },
       web: {
         boxShadow: '0 4px 12px rgba(16, 27, 70, 0.03)',
-      },
+      } as any,
     }),
   },
   newsRow: {
