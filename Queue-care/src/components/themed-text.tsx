@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: 450,
+    fontWeight: 400,
     letterSpacing: 0.01,
   },
   title: {
