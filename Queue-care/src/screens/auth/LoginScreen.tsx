@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
+  TextInput,
   Platform,
   TouchableOpacity,
   ActivityIndicator,
@@ -12,16 +13,73 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { getErrorMessage } from '../../utils/errorHandling';
 import * as authService from '../../services/authService';
 import { Fonts } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 export const LoginScreen = () => {
+  const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleGoogleSignIn = async () => {
+    // If either email or password is typed, we require BOTH to link/verify
+    if (email || password) {
+      if (!email) {
+        setError('Please enter your email to verify with Google.');
+        return;
+      }
+      if (!password) {
+        setError('Please enter a password to register for future logins.');
+        return;
+      }
+      // Simple email regex
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setError('Please enter a valid email address.');
+        return;
+      }
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters.');
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
     try {
-      await authService.signInWithGoogle();
+      const res = await authService.signInWithGoogle(
+        email ? email.trim() : undefined,
+        password || undefined
+      );
+      await login(res.access_token, res.refresh_token, res.user);
+    } catch (err: any) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmailPasswordSignIn = async () => {
+    if (!email) {
+      setError('Please enter your email.');
+      return;
+    }
+    if (!password) {
+      setError('Please enter your password.');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await authService.signInWithEmailPassword(email.trim(), password);
+      await login(res.access_token, res.refresh_token, res.user);
     } catch (err: any) {
       setError(getErrorMessage(err));
     } finally {
@@ -40,6 +98,55 @@ export const LoginScreen = () => {
 
           <View style={styles.form}>
             <ErrorMessage message={error || ''} />
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                placeholderTextColor="#94A3B8"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
+                editable={!loading}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your password"
+                placeholderTextColor="#94A3B8"
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={password}
+                onChangeText={setPassword}
+                editable={!loading}
+              />
+            </View>
+
+            <TouchableOpacity 
+              style={[styles.primaryButton, loading && styles.disabledButton]} 
+              onPress={handleEmailPasswordSignIn} 
+              activeOpacity={0.8}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Sign In with Password</Text>
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or verify & link with</Text>
+              <View style={styles.dividerLine} />
+            </View>
 
             <View style={styles.googleButtonContainer}>
               <TouchableOpacity onPress={handleGoogleSignIn} activeOpacity={0.7} disabled={loading}>
@@ -63,6 +170,10 @@ export const LoginScreen = () => {
                 </View>
               </TouchableOpacity>
             </View>
+
+            <Text style={styles.infoText}>
+              Note: Entering an email & password and clicking "Continue with Google" will check if they match your Google account and link them for future logins.
+            </Text>
           </View>
         </View>
       </View>
@@ -189,6 +300,71 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#1F2937',
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontFamily: Fonts.sans,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#334155',
+    marginBottom: 6,
+  },
+  input: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#0F172A',
+    fontFamily: Fonts.sans,
+  },
+  primaryButton: {
+    backgroundColor: '#00796B',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 52,
+    marginTop: 8,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontFamily: Fonts.sans,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    color: '#94A3B8',
+    paddingHorizontal: 10,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  infoText: {
+    fontFamily: Fonts.sans,
+    fontSize: 11,
+    color: '#64748B',
+    textAlign: 'center',
+    marginTop: 16,
+    lineHeight: 16,
   },
 });
 

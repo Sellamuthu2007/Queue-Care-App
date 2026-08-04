@@ -1,0 +1,16 @@
+# Local environment files (contains database passwords, secret keys, Client IDs)
+backend/.env
+Queue-care/.env
+
+# Dependencies
+node_modules/
+
+# IDE / System files
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

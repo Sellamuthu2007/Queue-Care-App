@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { User } from '../types/user';
 import * as authService from '../services/authService';
+import * as secureStorage from '../storage/secureStorage';
 
 interface AuthContextType {
   user: User | null;
@@ -22,14 +23,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const initializeAuth = async () => {
     try {
       setIsLoading(true);
-      const session = await authService.getSession();
-      if (session?.user) {
-        const u: User = {
-          id: session.user.id,
-          email: session.user.email || '',
-          role: (session.user.user_metadata?.role as User['role']) || 'patient',
-        };
-        setUserState(u);
+      const savedUser = await secureStorage.getUser();
+      const token = await secureStorage.getAccessToken();
+      if (savedUser && token) {
+        setUserState(savedUser);
         setIsAuthenticated(true);
       } else {
         setUserState(null);
@@ -44,13 +41,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (accessToken: string, refreshToken: string, userData: User) => {
-    setUserState(userData);
-    setIsAuthenticated(true);
+    try {
+      await secureStorage.saveAccessToken(accessToken);
+      await secureStorage.saveRefreshToken(refreshToken);
+      await secureStorage.saveUser(userData);
+      setUserState(userData);
+      setIsAuthenticated(true);
+    } catch (err) {
+      console.error('Error saving session to secure storage:', err);
+      throw err;
+    }
   };
 
   const logout = async () => {
     try {
       await authService.logout();
+      await secureStorage.clearTokens();
+    } catch (err) {
+      console.error('Error clearing session from secure storage:', err);
     } finally {
       setUserState(null);
       setIsAuthenticated(false);
@@ -65,24 +73,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     initializeAuth();
 
-    const { data: listener } = authService.onAuthStateChange((session) => {
-      if (session?.user) {
-        const u: User = {
-          id: session.user.id,
-          email: session.user.email || '',
-          role: (session.user.user_metadata?.role as User['role']) || 'patient',
-        };
-        setUserState(u);
-        setIsAuthenticated(true);
-      } else {
-        setUserState(null);
-        setIsAuthenticated(false);
-      }
-      setIsLoading(false);
-    });
+    // Listen to custom dispatch event for network interceptor signout redirects
+    const handleAuthLogout = () => {
+      setUserState(null);
+      setIsAuthenticated(false);
+    };
+
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('auth-logout', handleAuthLogout);
+    }
 
     return () => {
-      listener?.subscription.unsubscribe();
+      if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+        window.removeEventListener('auth-logout', handleAuthLogout);
+      }
     };
   }, []);
 

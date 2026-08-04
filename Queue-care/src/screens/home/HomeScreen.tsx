@@ -40,12 +40,18 @@ export const HomeScreen = () => {
     alert('Appointment booking flow selection triggered.');
   };
 
-  // Determine Initials from Phone / User
+  // Determine Initials from User name or email
   const getUserInitials = (): string => {
-    if (!user || !user.phone) return 'QC';
-    const digits = user.phone.replace(/[^0-9]/g, '');
-    if (digits.length >= 4) {
-      return 'P' + digits.slice(-2); // Display Patient phone offset
+    if (!user) return 'QC';
+    if (user.name) {
+      const parts = user.name.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    if (user.email) {
+      return user.email.slice(0, 2).toUpperCase();
     }
     return 'QC';
   };
@@ -79,7 +85,7 @@ export const HomeScreen = () => {
         {/* Profile Logout Callout (Floating helper at bottom list) */}
         <View style={styles.logoutContainer}>
           <TouchableOpacity style={styles.logoutButton} onPress={logout} activeOpacity={0.7}>
-            <Text style={styles.logoutText}>Log out of account ({user?.phone})</Text>
+            <Text style={styles.logoutText}>Log out of account ({user?.email || user?.name})</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
