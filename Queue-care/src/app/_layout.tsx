@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold } from '@expo-google-fonts/inter';
 import { JetBrainsMono_400Regular, JetBrainsMono_500Medium, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
@@ -37,9 +36,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <NavigationContainer independent={true}>
-        <RootNavigator />
-      </NavigationContainer>
+      <RootNavigator />
     </AuthProvider>
   );
 }
