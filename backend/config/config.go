@@ -16,9 +16,9 @@ type Config struct {
 	JwtRefreshSecret       string
 	AccessTokenExpiryMin   int
 	RefreshTokenExpiryDays int
-	OtpExpiryMin           int
-	OtpResendCooldownSec   int
-	OtpMaxAttempts         int
+	GoogleClientID         string
+	SupabaseURL            string
+	SupabaseAnonKey        string
 }
 
 var AppConfig *Config
@@ -38,9 +38,9 @@ func LoadConfig() {
 
 	accessTokenExpiryMin, _ := strconv.Atoi(getEnv("ACCESS_TOKEN_EXPIRY_MINUTES", "15"))
 	refreshTokenExpiryDays, _ := strconv.Atoi(getEnv("REFRESH_TOKEN_EXPIRY_DAYS", "30"))
-	otpExpiryMin, _ := strconv.Atoi(getEnv("OTP_EXPIRY_MINUTES", "5"))
-	otpResendCooldownSec, _ := strconv.Atoi(getEnv("OTP_RESEND_COOLDOWN_SECONDS", "60"))
-	otpMaxAttempts, _ := strconv.Atoi(getEnv("OTP_MAX_ATTEMPTS", "5"))
+	googleClientID := getEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", "")
+	supabaseURL := getEnv("EXPO_PUBLIC_SUPABASE_URL", "")
+	supabaseAnonKey := getEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", "")
 
 	AppConfig = &Config{
 		DatabaseURL:            dbURL,
@@ -50,9 +50,9 @@ func LoadConfig() {
 		JwtRefreshSecret:       getEnv("JWT_REFRESH_SECRET", "default_refresh_secret_for_dev_only_change_in_prod"),
 		AccessTokenExpiryMin:   accessTokenExpiryMin,
 		RefreshTokenExpiryDays: refreshTokenExpiryDays,
-		OtpExpiryMin:           otpExpiryMin,
-		OtpResendCooldownSec:   otpResendCooldownSec,
-		OtpMaxAttempts:         otpMaxAttempts,
+		GoogleClientID:         googleClientID,
+		SupabaseURL:            supabaseURL,
+		SupabaseAnonKey:        supabaseAnonKey,
 	}
 }
 

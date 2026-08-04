@@ -1,13 +1,17 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE IF NOT EXISTS users (
+DROP TABLE IF EXISTS users CASCADE;
+
+CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    phone VARCHAR(30) UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    is_verified BOOLEAN NOT NULL DEFAULT TRUE,
+    google_id VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    avatar_url TEXT NOT NULL DEFAULT '',
     role VARCHAR(30) NOT NULL DEFAULT 'patient',
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
+CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
