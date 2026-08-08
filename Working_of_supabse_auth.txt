@@ -1,0 +1,44 @@
+1. The Core Architecture
+Instead of your mobile app talking directly to Google's complex authentication endpoints, it uses a three-tier architecture:
+
+Mobile App (Expo) ───► Supabase Auth (OAuth Broker) ───► Google Accounts
+        │                                                     │
+        │ Send Supabase Token                                 │ Authenticate
+        ▼                                                     ▼
+Go Backend (Fiber) ◄──────────────────────────────────────────┘
+Supabase acts as the secure OAuth Broker that manages the handshakes with Google.
+Go Backend manages your local application users (in PostgreSQL), hashes/checks logins, and issues short-lived JWT tokens for your specific app resources.
+
+2. The Step-by-Step Flow
+Flow A: Sign-In with Google Only (Password Fields Blank)
+
+Trigger: You click "Continue with Google" without typing an email or password.
+
+Handshake: The mobile app opens a secure system browser session (WebBrowser) targeting your Supabase Google OAuth endpoint.
+
+Google Consent: You select your Google account in the browser. Google verifies you and redirects back to Supabase.
+
+Deep-Link Handoff: Supabase takes your verified Google identity, generates a temporary Supabase access token, and redirects the browser back to your app's custom URL scheme: exp://10.208.36.174:8081/--/redirect#access_token=...
+
+App Resumption: The phone detects the exp:// deep link, closes the web browser, and hands the access token back to your React Native app.
+
+Backend Sync: The app posts the Supabase token to your Go backend (POST /auth/google).
+
+Local User Registry: Your Go backend queries Supabase to get the user's Google details (email, name, photo), synchronizes or registers them in your local PostgreSQL users table, and signs a custom Go JWT access/refresh token back to the phone.
+
+Flow B: Google-Verified Email/Password Setup (First-time Registration)
+Trigger: You type an email and password in the inputs and click Continue with Google.
+Handshake: The OAuth flow runs exactly as above (steps 2–5).
+Backend Verification: The app sends the Supabase token along with your entered email and password to your Go backend (POST /auth/google).
+Email Check: The Go backend fetches the verified email from Supabase and compares it case-insensitively with the email you typed. If they don't match, the backend aborts and returns an error, ensuring you cannot associate a password with an email you don't own.
+Password Storage: If they match, the Go backend makes a secure PUT request to Supabase Auth (/auth/v1/user) using your OAuth session token to set your new password in Supabase's secure user table.
+
+
+
+
+Next Time: Your account is now linked. You can log in with either Google or your email and password.
+Flow C: Direct Email/Password Sign-In (Subsequent Logins)
+Trigger: You type your email and password and click Sign In with Password.
+Backend Auth: The app directly calls your Go backend (POST /auth/login), bypassing the Google WebBrowser redirect entirely.
+Supabase Validation: Your Go backend makes a background REST call to Supabase (/auth/v1/token?grant_type=password) to verify the credentials.
+Backend JWT: Upon successful validation, the Go backend fetches your profile, updates your local PostgreSQL record, and issues your custom Go JWT tokens to log you in instantly.

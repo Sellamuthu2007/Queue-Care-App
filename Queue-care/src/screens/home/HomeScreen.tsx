@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Platform, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
+import { useAppNavigation } from '../../context/NavigationContext';
+import { apiRequest } from '../../services/api';
 import HomeHeader from '../../components/home/HomeHeader';
 import AppointmentHero, { Appointment } from '../../components/home/AppointmentHero';
 import BookActionCard from '../../components/home/BookActionCard';
@@ -9,35 +11,59 @@ import HealthyLifeSection from '../../components/home/HealthyLifeSection';
 import HealthNewsSection from '../../components/home/HealthNewsSection';
 import BottomNavigation from '../../components/home/BottomNavigation';
 
-const MOCK_APPOINTMENTS: Appointment[] = [
-  {
-    id: 'appointment-1',
-    specialization: 'General Physician',
-    hospitalName: 'City Care Hospital',
-    location: 'Delhi',
-    date: '22 May 2025',
-    time: '11:30 AM',
-    tokenNumber: 'A-23',
-    status: 'Confirmed',
-  },
-  {
-    id: 'appointment-2',
-    specialization: 'Cardiologist',
-    hospitalName: 'Apex Heart Care',
-    location: 'Delhi',
-    date: '28 May 2025',
-    time: '04:00 PM',
-    tokenNumber: 'C-09',
-    status: 'Confirmed',
-  },
-];
-
 export const HomeScreen = () => {
   const { user, logout } = useAuth();
+  const { currentScreen, navigate } = useAppNavigation();
+  
   const [activeTab, setActiveTab] = useState<'home' | 'reports' | 'settings'>('home');
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [heroState, setHeroState] = useState<'normal' | 'loading' | 'empty' | 'error'>('loading');
+
+  const fetchAppointments = async () => {
+    try {
+      setHeroState('loading');
+      const data = await apiRequest('/appointments/me');
+      
+      // Filter only active appointments (not cancelled or completed) to present in Upcoming card
+      const active = Array.isArray(data) ? data.filter((apt: any) => apt.status !== 'Cancelled' && apt.status !== 'Completed') : [];
+      
+      if (active.length === 0) {
+        setAppointments([]);
+        setHeroState('empty');
+      } else {
+        console.log('[DEBUG] Raw Active Appointments:', JSON.stringify(active, null, 2));
+        const mapped: Appointment[] = active.map((apt: any) => ({
+          id: apt.appointment_id,
+          specialization: apt.doctor_specialization || apt.department,
+          hospitalName: apt.hospital_name,
+          location: 'New Delhi',
+          date: apt.appointment_date,
+          time: apt.appointment_time,
+          tokenNumber: apt.appointment_id ? apt.appointment_id.slice(0, 8).toUpperCase() : 'N/A',
+          status: apt.status
+        }));
+        console.log('[DEBUG] Mapped Appointments:', JSON.stringify(mapped, null, 2));
+        setAppointments(mapped);
+        setHeroState('normal');
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard appointments:', err);
+      setHeroState('error');
+    }
+  };
+
+  useEffect(() => {
+    if (currentScreen === 'Home') {
+      fetchAppointments();
+    }
+  }, [currentScreen]);
 
   const handleBookPress = () => {
-    alert('Appointment booking flow selection triggered.');
+    navigate('HospitalDetails');
+  };
+
+  const handleDetailsPress = (id: string) => {
+    navigate('AppointmentDetails', { appointmentId: id });
   };
 
   // Determine Initials from User name or email
@@ -68,10 +94,38 @@ export const HomeScreen = () => {
 
         {/* Upcoming Appointment Card (Single full-width presentation) */}
         <AppointmentHero
-          appointments={MOCK_APPOINTMENTS}
-          state="normal"
+          appointments={appointments}
+          state={heroState}
+          onRetry={fetchAppointments}
           onBookPress={handleBookPress}
+          onDetailsPress={handleDetailsPress}
         />
+
+        {/* Other Bookings List Section */}
+        {appointments.length > 1 && (
+          <View style={styles.otherBookingsSection}>
+            <Text style={styles.sectionTitle}>Your Other Bookings</Text>
+            {appointments.slice(1).map((apt) => (
+              <TouchableOpacity
+                key={apt.id}
+                style={styles.otherBookingCard}
+                onPress={() => handleDetailsPress(apt.id)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.otherBookingLeft}>
+                  <Text style={styles.otherDoctorText}>{apt.specialization}</Text>
+                  <Text style={styles.otherHospitalText}>{apt.hospitalName}</Text>
+                </View>
+                <View style={styles.otherBookingRight}>
+                  <Text style={styles.otherDateText}>
+                    {apt.date ? apt.date.split('T')[0] : ''}
+                  </Text>
+                  <Text style={styles.otherTimeText}>{apt.time}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         {/* Book Appointment Card Shortcut */}
         <BookActionCard onPress={handleBookPress} />
@@ -123,6 +177,66 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     fontWeight: '700',
     fontSize: 13,
+  },
+  otherBookingsSection: {
+    paddingHorizontal: 16,
+    marginVertical: 10,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 10,
+    letterSpacing: 0.3,
+  },
+  otherBookingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#101B46',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.03,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  otherBookingLeft: {
+    flex: 1.2,
+  },
+  otherDoctorText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 2,
+  },
+  otherHospitalText: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  otherBookingRight: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  otherDateText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#315BEF',
+    marginBottom: 2,
+  },
+  otherTimeText: {
+    fontSize: 12,
+    color: '#475569',
   },
 });
 export default HomeScreen;

@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { User } from '../types/user';
 import * as authService from '../services/authService';
 import * as secureStorage from '../storage/secureStorage';
+import { invalidateAuthSession, refreshSession, isAccessTokenExpired } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -25,14 +26,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const savedUser = await secureStorage.getUser();
       const token = await secureStorage.getAccessToken();
-      if (savedUser && token) {
-        setUserState(savedUser);
-        setIsAuthenticated(true);
-      } else {
+      const refreshToken = await secureStorage.getRefreshToken();
+
+      if (!savedUser || !token) {
+        await secureStorage.clearTokens();
         setUserState(null);
         setIsAuthenticated(false);
+        return;
       }
+
+      if (isAccessTokenExpired(token)) {
+        if (!refreshToken) {
+          await secureStorage.clearTokens();
+          setUserState(null);
+          setIsAuthenticated(false);
+          return;
+        }
+
+        try {
+          await refreshSession();
+          setUserState(savedUser);
+          setIsAuthenticated(true);
+          return;
+        } catch {
+          await secureStorage.clearTokens();
+          setUserState(null);
+          setIsAuthenticated(false);
+          return;
+        }
+      }
+
+      setUserState(savedUser);
+      setIsAuthenticated(true);
     } catch {
+      await secureStorage.clearTokens();
       setUserState(null);
       setIsAuthenticated(false);
     } finally {
@@ -55,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      invalidateAuthSession();
       await authService.logout();
       await secureStorage.clearTokens();
     } catch (err) {
@@ -75,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen to custom dispatch event for network interceptor signout redirects
     const handleAuthLogout = () => {
+      invalidateAuthSession();
       setUserState(null);
       setIsAuthenticated(false);
     };

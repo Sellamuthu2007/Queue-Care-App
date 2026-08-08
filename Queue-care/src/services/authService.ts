@@ -10,7 +10,7 @@ export const signInWithGoogle = async (email?: string, password?: string): Promi
   const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://rsuvywcjejuzkjvwknqe.supabase.co';
   
   // Use Linking to create a deep link pointing back to the app's redirect/login handler.
-  // In development/Expo Go, this resolves to something like exp://192.168.x.x:8081/--/redirect
+  // In development/Expo Go, this resolves to something like exp://10.208.36.174:8081/--/redirect
   // In standard builds, this resolves to queuecare://redirect
   const redirectUrl = Linking.createURL('redirect');
   console.log('[Google Sign-In Redirect URL]:', redirectUrl);
@@ -35,12 +35,14 @@ export const signInWithGoogle = async (email?: string, password?: string): Promi
 
   // Parse the redirect URL containing Supabase tokens (usually in the URL fragment '#access_token=...&refresh_token=...')
   const urlString = authResult.url;
+  console.log('[Supabase Redirect URL Received]:', urlString);
+
   const hashIndex = urlString.indexOf('#');
   const queryIndex = urlString.indexOf('?');
   const searchPart = hashIndex !== -1 ? urlString.slice(hashIndex + 1) : (queryIndex !== -1 ? urlString.slice(queryIndex + 1) : '');
 
   if (!searchPart) {
-    throw { code: 'AUTH_ERROR', message: 'No authentication tokens found in redirect URL' };
+    throw { code: 'AUTH_ERROR', message: 'No authentication tokens or parameters found in redirect URL' };
   }
 
   // Parse the parameters manually to handle hash query fragment styles
@@ -51,6 +53,12 @@ export const signInWithGoogle = async (email?: string, password?: string): Promi
       params[decodeURIComponent(key)] = decodeURIComponent(val);
     }
   });
+
+  // Check if Supabase returned an OAuth error
+  if (params['error'] || params['error_description']) {
+    const errMsg = params['error_description'] || params['error'];
+    throw { code: 'AUTH_ERROR', message: `Auth Server Error: ${errMsg}` };
+  }
 
   const supabaseAccessToken = params['access_token'];
   if (!supabaseAccessToken) {
