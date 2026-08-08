@@ -25,6 +25,8 @@ export default function RedirectScreen() {
         }
         
         const params: Record<string, string> = {};
+        
+        // Parse search part
         searchPart.split('&').forEach((part) => {
           const [key, val] = part.split('=');
           if (key && val) {
@@ -32,7 +34,17 @@ export default function RedirectScreen() {
           }
         });
         
+        // Check if there is a mobile deep link scheme to proxy the token back to mobile
+        const mobileRedirectScheme = params['mobile_redirect_scheme'];
         const supabaseAccessToken = params['access_token'];
+        
+        if (mobileRedirectScheme && supabaseAccessToken) {
+          const deepLink = `${mobileRedirectScheme}#access_token=${supabaseAccessToken}&refresh_token=${params['refresh_token'] || ''}&expires_at=${params['expires_at'] || ''}&expires_in=${params['expires_in'] || ''}&token_type=${params['token_type'] || ''}`;
+          console.log('[Proxying OAuth redirect to deep link]:', deepLink);
+          window.location.href = deepLink;
+          return;
+        }
+        
         if (!supabaseAccessToken) {
           router.replace('/');
           return;

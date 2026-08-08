@@ -24,6 +24,7 @@ interface AppointmentHeroProps {
   state?: 'normal' | 'loading' | 'empty' | 'error';
   onRetry?: () => void;
   onBookPress?: () => void;
+  onDetailsPress?: (id: string) => void;
 }
 
 export const AppointmentHero: React.FC<AppointmentHeroProps> = ({
@@ -31,6 +32,7 @@ export const AppointmentHero: React.FC<AppointmentHeroProps> = ({
   state = 'normal',
   onRetry,
   onBookPress,
+  onDetailsPress,
 }) => {
   const appt = appointments[0]; // Restrict the display to only the first active appointment object
 
@@ -94,59 +96,38 @@ export const AppointmentHero: React.FC<AppointmentHeroProps> = ({
 
   // 4. NORMAL SINGLE CARD STATE
   return (
-    <View style={styles.outerContainer}>
-      <View style={styles.heroCard}>
-        {/* Smooth CSS Gradient Simulating Panel */}
-        <View style={styles.gradientOverlay} />
-        <View style={styles.decoratorCircle1} />
+    <View style={{ width: '100%', paddingHorizontal: 16, marginVertical: 12 }}>
+      <TouchableOpacity 
+        style={{ backgroundColor: '#315BEF', borderRadius: 20, padding: 20 }}
+        onPress={() => onDetailsPress?.(appt.id)}
+        activeOpacity={0.9}
+      >
+        <Text style={{ color: '#E2E8F0', fontSize: 10, fontWeight: 'bold', letterSpacing: 1, marginBottom: 8 }}>
+          YOUR UPCOMING APPOINTMENT
+        </Text>
+        <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: 'bold', marginBottom: 4 }}>
+          {appt.specialization}
+        </Text>
+        <Text style={{ color: '#E2E8F0', fontSize: 14, marginBottom: 12 }}>
+          {appt.hospitalName}, {appt.location}
+        </Text>
         
-        {/* Floating 3D Calendar Illustration on the right */}
-        <Image
-          source={{ uri: 'https://cdn3d.iconscout.com/3d/premium/thumb/calendar-6332616-5221008.png' }}
-          style={styles.calendarHeroImage}
-          resizeMode="contain"
-        />
-
-        <View style={styles.cardHeader}>
-          <View style={styles.cardHeaderLeft}>
-            <Text style={styles.headerLabel}>YOUR UPCOMING APPOINTMENT</Text>
-            <Text style={styles.specialtyText}>{appt.specialization}</Text>
-            <Text style={styles.hospitalText}>
-              {appt.hospitalName}, {appt.location}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.dateTimeRow}>
-          <View style={styles.clockIcon}>
-            <View style={styles.clockCircle} />
-            <View style={styles.clockHand} />
-          </View>
-          <Text style={styles.dateTimeText}>
-            {appt.date} • {appt.time}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+          <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: 'bold' }}>
+            📅 {appt.date.split('T')[0]} • 🕒 {appt.time}
           </Text>
         </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.cardFooter}>
-          {/* White Confirmed Badge with Green Text and Dot */}
-          <View style={styles.statusBadge}>
-            <View style={styles.statusDot} />
-            <Text style={styles.statusText}>Confirmed</Text>
+        
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.2)', paddingTop: 10 }}>
+          <View style={{ backgroundColor: '#FFFFFF', paddingVertical: 4, paddingHorizontal: 10, borderRadius: 12 }}>
+            <Text style={{ color: '#10B981', fontSize: 12, fontWeight: 'bold' }}>{appt.status}</Text>
           </View>
-
-          <View style={styles.tokenContainer}>
-            <Text style={styles.tokenLabel}>Your Token Number</Text>
-            <Text style={styles.tokenValue}>{appt.tokenNumber}</Text>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={{ color: '#E2E8F0', fontSize: 10 }}>Token Number</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' }}>{appt.tokenNumber}</Text>
           </View>
         </View>
-
-        <TouchableOpacity style={styles.detailsRow} activeOpacity={0.8}>
-          <Text style={styles.detailsText}>View Details</Text>
-          <Text style={styles.detailsChevron}>&gt;</Text>
-        </TouchableOpacity>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };

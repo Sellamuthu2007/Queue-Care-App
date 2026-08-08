@@ -3,6 +3,12 @@ import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import LoginScreen from '../screens/auth/LoginScreen';
 import HomeScreen from '../screens/home/HomeScreen';
+import HospitalDetailsScreen from '../screens/home/HospitalDetailsScreen';
+import DoctorDetailsScreen from '../screens/home/DoctorDetailsScreen';
+import BookingFormScreen from '../screens/home/BookingFormScreen';
+import BookingSuccessScreen from '../screens/home/BookingSuccessScreen';
+import AppointmentDetailsScreen from '../screens/home/AppointmentDetailsScreen';
+import { NavigationProvider, useAppNavigation } from '../context/NavigationContext';
 import { apiRequest } from '../services/api';
 
 export const RootNavigator = () => {
@@ -73,7 +79,34 @@ export const RootNavigator = () => {
     );
   }
 
-  return isAuthenticated ? <HomeScreen /> : <LoginScreen />;
+  return isAuthenticated ? (
+    <NavigationProvider>
+      <AuthenticatedScreens />
+    </NavigationProvider>
+  ) : (
+    <LoginScreen />
+  );
+};
+
+const AuthenticatedScreens = () => {
+  const { currentScreen } = useAppNavigation();
+
+  switch (currentScreen) {
+    case 'Home':
+      return <HomeScreen />;
+    case 'HospitalDetails':
+      return <HospitalDetailsScreen />;
+    case 'DoctorDetails':
+      return <DoctorDetailsScreen />;
+    case 'BookingForm':
+      return <BookingFormScreen />;
+    case 'BookingSuccess':
+      return <BookingSuccessScreen />;
+    case 'AppointmentDetails':
+      return <AppointmentDetailsScreen />;
+    default:
+      return <HomeScreen />;
+  }
 };
 
 const styles = StyleSheet.create({
