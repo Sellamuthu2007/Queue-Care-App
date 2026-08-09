@@ -61,5 +61,13 @@ func SetupRoutes(app *fiber.App) {
 	authenticated.Get("/appointments/me", handler.GetMyAppointments)
 	authenticated.Get("/appointments/:id", handler.GetAppointmentDetails)
 	authenticated.Patch("/appointments/:id/cancel", handler.CancelMyAppointment)
+
+	// User Profile endpoints
+	authenticated.Get("/user/profile", handler.GetUserProfile)
+	authenticated.Put("/user/profile", handler.UpdateUserProfile)
+
+	// Notification endpoints
+	authenticated.Get("/notifications", handler.GetMyNotifications)
+	authenticated.Post("/notifications/read", handler.MarkNotificationsRead)
 }
 

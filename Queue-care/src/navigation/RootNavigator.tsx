@@ -8,6 +8,9 @@ import DoctorDetailsScreen from '../screens/home/DoctorDetailsScreen';
 import BookingFormScreen from '../screens/home/BookingFormScreen';
 import BookingSuccessScreen from '../screens/home/BookingSuccessScreen';
 import AppointmentDetailsScreen from '../screens/home/AppointmentDetailsScreen';
+import ProfileScreen from '../screens/home/ProfileScreen';
+import BookingsListScreen from '../screens/home/BookingsListScreen';
+import NotificationsScreen from '../screens/home/NotificationsScreen';
 import { NavigationProvider, useAppNavigation } from '../context/NavigationContext';
 import { apiRequest } from '../services/api';
 
@@ -104,6 +107,12 @@ const AuthenticatedScreens = () => {
       return <BookingSuccessScreen />;
     case 'AppointmentDetails':
       return <AppointmentDetailsScreen />;
+    case 'Profile':
+      return <ProfileScreen />;
+    case 'BookingsList':
+      return <BookingsListScreen />;
+    case 'Notifications':
+      return <NotificationsScreen />;
     default:
       return <HomeScreen />;
   }

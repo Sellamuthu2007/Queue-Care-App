@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"queue-care-backend/errors"
 	"queue-care-backend/models"
 	"queue-care-backend/repository"
@@ -26,6 +27,17 @@ func BookAppointment(c *fiber.Ctx) error {
 	createdApt, err := repository.CreateAppointment(&apt)
 	if err != nil {
 		return errors.SendError(c, fiber.StatusInternalServerError, "DB_ERROR", err.Error())
+	}
+
+	// Trigger user-isolated booking notification
+	if fullApt, err := repository.GetAppointmentByID(createdApt.ID, patientID); err == nil {
+		notif := &models.Notification{
+			UserID:  patientID,
+			Title:   "Appointment Booked",
+			Message: fmt.Sprintf("Your appointment with %s (%s) at %s is confirmed. Token Number: #%d.", fullApt.DoctorName, fullApt.DoctorSpecialization, fullApt.HospitalName, fullApt.QueuePosition),
+			Type:    "booking",
+		}
+		_ = repository.CreateNotification(notif)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(createdApt)
@@ -64,9 +76,23 @@ func CancelMyAppointment(c *fiber.Ctx) error {
 		return errors.SendError(c, fiber.StatusBadRequest, "INVALID_REQUEST", "Appointment ID is required")
 	}
 
+	// Query appointment details before cancel to get metadata for notification
+	apt, notifErr := repository.GetAppointmentByID(id, patientID)
+
 	err := repository.CancelAppointment(id, patientID)
 	if err != nil {
 		return errors.SendError(c, fiber.StatusInternalServerError, "DB_ERROR", "Failed to cancel appointment")
+	}
+
+	// Trigger user-isolated cancellation notification
+	if notifErr == nil {
+		notif := &models.Notification{
+			UserID:  patientID,
+			Title:   "Appointment Cancelled",
+			Message: fmt.Sprintf("Your appointment with %s (%s) at %s has been successfully cancelled.", apt.DoctorName, apt.DoctorSpecialization, apt.HospitalName),
+			Type:    "cancellation",
+		}
+		_ = repository.CreateNotification(notif)
 	}
 
 	return c.JSON(fiber.Map{
