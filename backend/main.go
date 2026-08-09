@@ -34,8 +34,8 @@ func copyFile(src, dst string) error {
 }
 
 func copyAssets() {
-	sourceDir := `C:\Users\senth\.gemini\antigravity-ide\brain\9d819ef2-7924-49fb-aba5-8cb21203bef6`
-	destDir := `e:\MAD - QUEUE CARE\Queue-Care-App\Queue-care\assets\images`
+	sourceDir := 
+	destDir := 
 
 	// Ensure destination directory exists
 	if err := os.MkdirAll(destDir, 0755); err != nil {
