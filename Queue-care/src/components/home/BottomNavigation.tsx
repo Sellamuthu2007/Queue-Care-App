@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+export type TabName = 'home' | 'bookings' | 'reports' | 'profile';
+
 interface BottomNavigationProps {
-  activeTab?: 'home' | 'reports' | 'settings';
-  onTabChange?: (tab: 'home' | 'reports' | 'settings') => void;
+  activeTab?: TabName;
+  onTabChange?: (tab: TabName) => void;
 }
 
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({
@@ -14,11 +16,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   const insets = useSafeAreaInsets();
   const bottomOffset = insets.bottom > 0 ? insets.bottom + 8 : 16;
 
-  const getTabColor = (tabName: 'home' | 'reports' | 'settings') => {
+  const getTabColor = (tabName: TabName) => {
     return activeTab === tabName ? '#315BEF' : '#667085';
   };
 
-  const renderIcon = (tabName: 'home' | 'reports' | 'settings') => {
+  const renderIcon = (tabName: TabName) => {
     const color = getTabColor(tabName);
 
     switch (tabName) {
@@ -28,6 +30,19 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
             {/* Custom minimalist house shape */}
             <View style={[styles.houseRoof, { borderBottomColor: color }]} />
             <View style={[styles.houseBody, { borderColor: color }]} />
+          </View>
+        );
+      case 'bookings':
+        return (
+          <View style={styles.iconContainer}>
+            {/* Custom minimalist ticket/calendar shape */}
+            <View style={[styles.calendarBody, { borderColor: color }]}>
+              <View style={[styles.calendarHeader, { backgroundColor: color }]} />
+              <View style={styles.calendarDotsRow}>
+                <View style={[styles.calendarDot, { backgroundColor: color }]} />
+                <View style={[styles.calendarDot, { backgroundColor: color }]} />
+              </View>
+            </View>
           </View>
         );
       case 'reports':
@@ -40,10 +55,10 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
             </View>
           </View>
         );
-      case 'settings':
+      case 'profile':
         return (
           <View style={styles.iconContainer}>
-            {/* Custom concentric circular gear shapes */}
+            {/* Custom minimalist gear/user settings shape */}
             <View style={[styles.gearOuter, { borderColor: color }]}>
               <View style={[styles.gearInner, { borderColor: color }]} />
             </View>
@@ -67,6 +82,15 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
 
       <TouchableOpacity
         style={styles.tab}
+        onPress={() => onTabChange && onTabChange('bookings')}
+        activeOpacity={0.7}
+      >
+        {renderIcon('bookings')}
+        <Text style={[styles.tabLabel, { color: getTabColor('bookings') }]}>Bookings</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.tab}
         onPress={() => onTabChange && onTabChange('reports')}
         activeOpacity={0.7}
       >
@@ -76,11 +100,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
 
       <TouchableOpacity
         style={styles.tab}
-        onPress={() => onTabChange && onTabChange('settings')}
+        onPress={() => onTabChange && onTabChange('profile')}
         activeOpacity={0.7}
       >
-        {renderIcon('settings')}
-        <Text style={[styles.tabLabel, { color: getTabColor('settings') }]}>Settings</Text>
+        {renderIcon('profile')}
+        <Text style={[styles.tabLabel, { color: getTabColor('profile') }]}>Profile</Text>
       </TouchableOpacity>
     </View>
   );
@@ -89,17 +113,17 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
 const styles = StyleSheet.create({
   floatingNav: {
     position: 'absolute',
-    left: 20,
-    right: 20,
-    height: 72,
+    left: 16,
+    right: 16,
+    height: 68,
     backgroundColor: '#FFFFFF',
-    borderRadius: 24, // Consistent large corner rounding
+    borderRadius: 22,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#101B46',
@@ -120,11 +144,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',
-    gap: 4,
+    gap: 3,
   },
   tabLabel: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 10,
+    fontWeight: '800',
     letterSpacing: 0.2,
   },
   iconContainer: {
@@ -152,6 +176,29 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderBottomLeftRadius: 1.5,
     borderBottomRightRadius: 1.5,
+  },
+  // CALENDAR ICON DRAWING
+  calendarBody: {
+    width: 15,
+    height: 15,
+    borderWidth: 1.8,
+    borderRadius: 3,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  calendarHeader: {
+    width: '100%',
+    height: 3,
+  },
+  calendarDotsRow: {
+    flexDirection: 'row',
+    gap: 2,
+    marginTop: 3,
+  },
+  calendarDot: {
+    width: 2,
+    height: 2,
+    borderRadius: 1,
   },
   // FILE OUTLINE ICON DRAWING
   fileBody: {
@@ -185,4 +232,5 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
 });
+
 export default BottomNavigation;

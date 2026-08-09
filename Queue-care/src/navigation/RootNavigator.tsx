@@ -11,6 +11,8 @@ import AppointmentDetailsScreen from '../screens/home/AppointmentDetailsScreen';
 import ProfileScreen from '../screens/home/ProfileScreen';
 import BookingsListScreen from '../screens/home/BookingsListScreen';
 import NotificationsScreen from '../screens/home/NotificationsScreen';
+import ReportsScreen from '../screens/home/ReportsScreen';
+import ReportDetailsScreen from '../screens/home/ReportDetailsScreen';
 import { NavigationProvider, useAppNavigation } from '../context/NavigationContext';
 import { apiRequest } from '../services/api';
 
@@ -113,6 +115,10 @@ const AuthenticatedScreens = () => {
       return <BookingsListScreen />;
     case 'Notifications':
       return <NotificationsScreen />;
+    case 'Reports':
+      return <ReportsScreen />;
+    case 'ReportDetails':
+      return <ReportDetailsScreen />;
     default:
       return <HomeScreen />;
   }

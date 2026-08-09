@@ -8,7 +8,7 @@ const getDevApiUrl = () => {
     return 'http://127.0.0.1:8080';
   }
   // On mobile, use your active localtunnel address
-  return 'https://hungry-papers-tickle.loca.lt';
+  return 'https://chilly-rats-drop.loca.lt';
 };
 
 const DEV_API_URL = getDevApiUrl();

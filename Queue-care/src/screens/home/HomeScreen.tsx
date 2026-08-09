@@ -9,13 +9,13 @@ import AppointmentHero, { Appointment } from '../../components/home/AppointmentH
 import BookActionCard from '../../components/home/BookActionCard';
 import HealthyLifeSection from '../../components/home/HealthyLifeSection';
 import HealthNewsSection from '../../components/home/HealthNewsSection';
-import BottomNavigation from '../../components/home/BottomNavigation';
+import BottomNavigation, { TabName } from '../../components/home/BottomNavigation';
 
 export const HomeScreen = () => {
   const { user, logout } = useAuth();
   const { currentScreen, navigate } = useAppNavigation();
   
-  const [activeTab, setActiveTab] = useState<'home' | 'reports' | 'settings'>('home');
+  const [activeTab, setActiveTab] = useState<TabName>('home');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [heroState, setHeroState] = useState<'normal' | 'loading' | 'empty' | 'error'>('loading');
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -78,6 +78,17 @@ export const HomeScreen = () => {
 
   const handleDetailsPress = (id: string) => {
     navigate('AppointmentDetails', { appointmentId: id });
+  };
+
+  const handleTabChange = (tab: TabName) => {
+    setActiveTab(tab);
+    if (tab === 'bookings') {
+      navigate('BookingsList');
+    } else if (tab === 'reports') {
+      navigate('Reports');
+    } else if (tab === 'profile') {
+      navigate('Profile');
+    }
   };
 
   // Determine Initials from User name or email
@@ -154,7 +165,7 @@ export const HomeScreen = () => {
       </ScrollView>
 
       {/* Floating Bottom Navigator (Fixed at Page Bottom) */}
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNavigation activeTab="home" onTabChange={handleTabChange} />
     </SafeAreaView>
   );
 };

@@ -9,7 +9,9 @@ export type ScreenName =
   | 'AppointmentDetails'
   | 'Profile'
   | 'BookingsList'
-  | 'Notifications';
+  | 'Notifications'
+  | 'Reports'
+  | 'ReportDetails';
 
 interface NavigationContextType {
   currentScreen: ScreenName;
