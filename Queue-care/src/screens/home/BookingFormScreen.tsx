@@ -30,21 +30,21 @@ export const BookingFormScreen = () => {
 
   // Form Fields
   const [patientName, setPatientName] = useState<string>(user?.name || '');
-  const [patientAge, setPatientAge] = useState<string>('');
-  const [patientGender, setPatientGender] = useState<'Male' | 'Female' | 'Other'>('Male');
-  const [patientPhone, setPatientPhone] = useState<string>('');
+  const [patientAge, setPatientAge] = useState<string>(user?.age ? String(user.age) : '');
+  const [patientGender, setPatientGender] = useState<'Male' | 'Female' | 'Other'>((user?.gender as any) || 'Male');
+  const [patientPhone, setPatientPhone] = useState<string>(user?.phone || '');
   const [patientEmail] = useState<string>(user?.email || '');
-  const [patientAddress, setPatientAddress] = useState<string>('');
-  const [patientBloodGroup, setPatientBloodGroup] = useState<string>('');
+  const [patientAddress, setPatientAddress] = useState<string>(user?.address || '');
+  const [patientBloodGroup, setPatientBloodGroup] = useState<string>(user?.blood_group || '');
   const [patientEmergencyContact, setPatientEmergencyContact] = useState<string>('');
 
   const [reason, setReason] = useState<string>('');
   const [symptoms, setSymptoms] = useState<string>('');
-  const [medicalDiseases, setMedicalDiseases] = useState<string>('');
-  const [medicalMedications, setMedicalMedications] = useState<string>('');
+  const [medicalDiseases, setMedicalDiseases] = useState<string>(user?.medical_diseases || '');
+  const [medicalMedications, setMedicalMedications] = useState<string>(user?.medical_medications || '');
   const [medicalPreviousVisit, setMedicalPreviousVisit] = useState<boolean>(false);
-  const [medicalInsuranceAvailable, setMedicalInsuranceAvailable] = useState<boolean>(false);
-  const [medicalInsuranceProvider, setMedicalInsuranceProvider] = useState<string>('');
+  const [medicalInsuranceAvailable, setMedicalInsuranceAvailable] = useState<boolean>(user?.medical_insurance_available || false);
+  const [medicalInsuranceProvider, setMedicalInsuranceProvider] = useState<string>(user?.medical_insurance_provider || '');
   const [notes, setNotes] = useState<string>('');
 
   const [isConsentChecked, setIsConsentChecked] = useState<boolean>(false);

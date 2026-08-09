@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Platform, Image } from 'react-native';
+import { useAppNavigation } from '../../context/NavigationContext';
 
 interface HomeHeaderProps {
   userInitials?: string;
@@ -10,6 +11,8 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
   userInitials = 'QC',
   notificationCount = 3,
 }) => {
+  const { navigate } = useAppNavigation();
+
   return (
     <View style={styles.container}>
       {/* Brand Header */}
@@ -20,7 +23,11 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
       {/* Action Row: Avatar, Search, Notifications */}
       <View style={styles.actionRow}>
         {/* Profile Avatar with Photo */}
-        <TouchableOpacity style={styles.avatarContainer} activeOpacity={0.8}>
+        <TouchableOpacity 
+          style={styles.avatarContainer} 
+          activeOpacity={0.8}
+          onPress={() => navigate('Profile')}
+        >
           <Image
             source={{ uri: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=120&auto=format&fit=crop' }}
             style={styles.avatar}
@@ -43,7 +50,11 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         </View>
 
         {/* Notification Bell Icon */}
-        <TouchableOpacity style={styles.bellContainer} activeOpacity={0.7}>
+        <TouchableOpacity 
+          style={styles.bellContainer} 
+          activeOpacity={0.7}
+          onPress={() => navigate('Notifications')}
+        >
           <View style={styles.bellIconWrapper}>
             <View style={styles.bellCup} />
             <View style={styles.bellRim} />

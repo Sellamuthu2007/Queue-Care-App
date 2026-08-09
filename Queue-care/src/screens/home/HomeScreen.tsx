@@ -18,6 +18,19 @@ export const HomeScreen = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'reports' | 'settings'>('home');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [heroState, setHeroState] = useState<'normal' | 'loading' | 'empty' | 'error'>('loading');
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const notifs = await apiRequest('/notifications');
+      if (Array.isArray(notifs)) {
+        const unread = notifs.filter((n: any) => !n.is_read).length;
+        setUnreadCount(unread);
+      }
+    } catch (err) {
+      console.error('Error fetching unread notifications count:', err);
+    }
+  };
 
   const fetchAppointments = async () => {
     try {
@@ -55,6 +68,7 @@ export const HomeScreen = () => {
   useEffect(() => {
     if (currentScreen === 'Home') {
       fetchAppointments();
+      fetchUnreadCount();
     }
   }, [currentScreen]);
 
@@ -90,7 +104,7 @@ export const HomeScreen = () => {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Header Block */}
-        <HomeHeader userInitials={getUserInitials()} notificationCount={3} />
+        <HomeHeader userInitials={getUserInitials()} notificationCount={unreadCount} />
 
         {/* Upcoming Appointment Card (Single full-width presentation) */}
         <AppointmentHero
@@ -101,29 +115,24 @@ export const HomeScreen = () => {
           onDetailsPress={handleDetailsPress}
         />
 
-        {/* Other Bookings List Section */}
+        {/* Other Bookings Summary Card */}
         {appointments.length > 1 && (
           <View style={styles.otherBookingsSection}>
-            <Text style={styles.sectionTitle}>Your Other Bookings</Text>
-            {appointments.slice(1).map((apt) => (
-              <TouchableOpacity
-                key={apt.id}
-                style={styles.otherBookingCard}
-                onPress={() => handleDetailsPress(apt.id)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.otherBookingLeft}>
-                  <Text style={styles.otherDoctorText}>{apt.specialization}</Text>
-                  <Text style={styles.otherHospitalText}>{apt.hospitalName}</Text>
-                </View>
-                <View style={styles.otherBookingRight}>
-                  <Text style={styles.otherDateText}>
-                    {apt.date ? apt.date.split('T')[0] : ''}
-                  </Text>
-                  <Text style={styles.otherTimeText}>{apt.time}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+            <TouchableOpacity
+              style={styles.summaryCard}
+              onPress={() => navigate('BookingsList')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.summaryLeft}>
+                <Text style={styles.summaryTitle}>Other Bookings</Text>
+                <Text style={styles.summarySub}>
+                  You have {appointments.length - 1} other active booking{appointments.length - 1 > 1 ? 's' : ''} scheduled.
+                </Text>
+              </View>
+              <View style={styles.summaryRight}>
+                <Text style={styles.viewAllText}>View All →</Text>
+              </View>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -182,14 +191,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginVertical: 10,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0F172A',
-    marginBottom: 10,
-    letterSpacing: 0.3,
-  },
-  otherBookingCard: {
+  summaryCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
@@ -198,7 +200,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#101B46',
@@ -211,32 +212,28 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  otherBookingLeft: {
-    flex: 1.2,
+  summaryLeft: {
+    flex: 1,
+    paddingRight: 12,
   },
-  otherDoctorText: {
+  summaryTitle: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 2,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
   },
-  otherHospitalText: {
+  summarySub: {
     fontSize: 12,
     color: '#64748B',
+    lineHeight: 16,
   },
-  otherBookingRight: {
-    flex: 1,
-    alignItems: 'flex-end',
+  summaryRight: {
+    justifyContent: 'center',
   },
-  otherDateText: {
-    fontSize: 12,
-    fontWeight: '700',
+  viewAllText: {
+    fontSize: 13,
+    fontWeight: '800',
     color: '#315BEF',
-    marginBottom: 2,
-  },
-  otherTimeText: {
-    fontSize: 12,
-    color: '#475569',
   },
 });
 export default HomeScreen;

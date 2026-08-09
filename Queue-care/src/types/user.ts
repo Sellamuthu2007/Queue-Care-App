@@ -3,6 +3,14 @@ export interface User {
   email: string;
   name?: string;
   avatar_url?: string;
-  phone?: string;
   role: 'patient' | 'doctor' | 'nurse' | 'receptionist' | 'hospital_admin';
+  age?: number;
+  gender?: string;
+  phone?: string;
+  blood_group?: string;
+  address?: string;
+  medical_diseases?: string;
+  medical_medications?: string;
+  medical_insurance_available?: boolean;
+  medical_insurance_provider?: string;
 }

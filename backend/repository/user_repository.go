@@ -10,7 +10,7 @@ func GetOrCreateUserByGoogleID(googleID, email, name, avatarURL string) (*models
 	var user models.User
 	
 	// Check if user already exists by google_id
-	err := db.DB.Get(&user, "SELECT id, google_id, email, name, avatar_url, role, created_at, updated_at FROM users WHERE google_id = $1", googleID)
+	err := db.DB.Get(&user, "SELECT id, google_id, email, name, avatar_url, role, age, gender, phone, blood_group, address, medical_diseases, medical_medications, medical_insurance_available, medical_insurance_provider, created_at, updated_at FROM users WHERE google_id = $1", googleID)
 	if err == nil {
 		// User exists, update user info if required (name/avatar changes)
 		if user.Name != name || user.AvatarURL != avatarURL || user.Email != email {
@@ -33,7 +33,7 @@ func GetOrCreateUserByGoogleID(googleID, email, name, avatarURL string) (*models
 	}
 
 	// User does not exist, check if user exists by email (to link google_id to existing account if registering with Google)
-	err = db.DB.Get(&user, "SELECT id, google_id, email, name, avatar_url, role, created_at, updated_at FROM users WHERE email = $1", email)
+	err = db.DB.Get(&user, "SELECT id, google_id, email, name, avatar_url, role, age, gender, phone, blood_group, address, medical_diseases, medical_medications, medical_insurance_available, medical_insurance_provider, created_at, updated_at FROM users WHERE email = $1", email)
 	if err == nil {
 		// Link Google ID and update name/avatar
 		_, err = db.DB.Exec(
@@ -55,7 +55,7 @@ func GetOrCreateUserByGoogleID(googleID, email, name, avatarURL string) (*models
 
 	// Brand new user registration
 	err = db.DB.QueryRowx(
-		"INSERT INTO users (google_id, email, name, avatar_url, role) VALUES ($1, $2, $3, $4, 'patient') RETURNING id, google_id, email, name, avatar_url, role, created_at, updated_at",
+		"INSERT INTO users (google_id, email, name, avatar_url, role) VALUES ($1, $2, $3, $4, 'patient') RETURNING id, google_id, email, name, avatar_url, role, age, gender, phone, blood_group, address, medical_diseases, medical_medications, medical_insurance_available, medical_insurance_provider, created_at, updated_at",
 		googleID, email, name, avatarURL,
 	).StructScan(&user)
 
@@ -66,11 +66,52 @@ func GetOrCreateUserByGoogleID(googleID, email, name, avatarURL string) (*models
 	return &user, nil
 }
 
-func GetUserByID(userID string) (*models.User, error) {
+func GetUserProfileByID(userID string) (*models.User, error) {
 	var user models.User
-	err := db.DB.Get(&user, "SELECT id, google_id, email, name, avatar_url, role, created_at, updated_at FROM users WHERE id = $1", userID)
+	err := db.DB.Get(&user, "SELECT id, google_id, email, name, avatar_url, role, age, gender, phone, blood_group, address, medical_diseases, medical_medications, medical_insurance_available, medical_insurance_provider, created_at, updated_at FROM users WHERE id = $1", userID)
 	if err != nil {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func GetUserByID(userID string) (*models.User, error) {
+	var user models.User
+	err := db.DB.Get(&user, "SELECT id, google_id, email, name, avatar_url, role, age, gender, phone, blood_group, address, medical_diseases, medical_medications, medical_insurance_available, medical_insurance_provider, created_at, updated_at FROM users WHERE id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func UpdateUserProfile(userID string, user *models.User) error {
+	query := `UPDATE users SET 
+		name = $1,
+		age = $2,
+		gender = $3,
+		phone = $4,
+		blood_group = $5,
+		address = $6,
+		medical_diseases = $7,
+		medical_medications = $8,
+		medical_insurance_available = $9,
+		medical_insurance_provider = $10,
+		updated_at = NOW()
+		WHERE id = $11`
+
+	_, err := db.DB.Exec(
+		query,
+		user.Name,
+		user.Age,
+		user.Gender,
+		user.Phone,
+		user.BloodGroup,
+		user.Address,
+		user.MedicalDiseases,
+		user.MedicalMedications,
+		user.MedicalInsuranceAvailable,
+		user.MedicalInsuranceProvider,
+		userID,
+	)
+	return err
 }

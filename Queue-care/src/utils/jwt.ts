@@ -12,8 +12,9 @@ const base64UrlDecode = (input: string): string => {
     return globalThis.atob(padded);
   }
 
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(padded, 'base64').toString('utf8');
+  const G = globalThis as any;
+  if (typeof G.Buffer !== 'undefined') {
+    return G.Buffer.from(padded, 'base64').toString('utf8');
   }
 
   throw new Error('No base64 decoder available');
