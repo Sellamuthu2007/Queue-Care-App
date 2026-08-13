@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold } from '@expo-google-fonts/inter';
 import { JetBrainsMono_400Regular, JetBrainsMono_500Medium, JetBrainsMono_700Bold } from '@expo-google-fonts/jetbrains-mono';
 import { AuthProvider } from '../context/AuthContext';
+import { AppointmentProvider } from '../context/AppointmentContext';
 import RootNavigator from '../navigation/RootNavigator';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
@@ -36,7 +37,9 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <RootNavigator />
+      <AppointmentProvider>
+        <RootNavigator />
+      </AppointmentProvider>
     </AuthProvider>
   );
 }

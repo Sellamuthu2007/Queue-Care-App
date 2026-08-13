@@ -12,11 +12,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppNavigation } from '../../context/NavigationContext';
 import { useAuth } from '../../context/AuthContext';
+import { useAppointments } from '../../context/AppointmentContext';
 import { apiRequest } from '../../services/api';
 
 export const BookingFormScreen = () => {
   const { screenParams, navigate, goBack } = useAppNavigation();
   const { user } = useAuth();
+  const { addAppointment } = useAppointments();
 
   const {
     doctorId,
@@ -106,6 +108,9 @@ export const BookingFormScreen = () => {
         method: 'POST',
         body: JSON.stringify(payload)
       });
+
+      // Add to cache
+      addAppointment(appointmentResult);
 
       // Navigate to success screen
       navigate('BookingSuccess', { appointment: appointmentResult });

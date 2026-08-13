@@ -69,6 +69,7 @@ func SetupRoutes(app *fiber.App) {
 	// Notification endpoints
 	authenticated.Get("/notifications", handler.GetMyNotifications)
 	authenticated.Post("/notifications/read", handler.MarkNotificationsRead)
+	authenticated.Delete("/notifications/:id", handler.DeleteNotification)
 
 	// Report endpoints
 	authenticated.Get("/reports", handler.GetMyReports)

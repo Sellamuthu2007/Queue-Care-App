@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppNavigation } from '../../context/NavigationContext';
+import { useAppointments } from '../../context/AppointmentContext';
 import { apiRequest } from '../../services/api';
 
 interface Appointment {
@@ -62,6 +63,7 @@ const STATUS_STATES = [
 export const AppointmentDetailsScreen = () => {
   const { screenParams, goBack } = useAppNavigation();
   const appointmentId = screenParams?.appointmentId;
+  const { getAppointmentById, updateAppointmentInCache, removeAppointmentFromCache } = useAppointments();
 
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -69,10 +71,21 @@ export const AppointmentDetailsScreen = () => {
 
   const fetchAppointmentDetails = async () => {
     if (!appointmentId) return;
+
+    // Check cache first for instant UI response
+    const cached = getAppointmentById(appointmentId);
+    if (cached) {
+      setAppointment(cached);
+      setIsLoading(false);
+    }
+
     try {
-      setIsLoading(true);
+      if (!cached) {
+        setIsLoading(true);
+      }
       const data = await apiRequest(`/appointments/${appointmentId}`);
       setAppointment(data);
+      updateAppointmentInCache(data);
     } catch (err) {
       console.error('Error loading appointment details:', err);
     } finally {
@@ -102,13 +115,17 @@ export const AppointmentDetailsScreen = () => {
       await apiRequest(`/appointments/${appointment.appointment_id}/cancel`, {
         method: 'PATCH'
       });
-      alert('Your appointment has been cancelled.');
       
-      // Reload appointment state
-      await fetchAppointmentDetails();
+      // Update context cache immediately
+      removeAppointmentFromCache(appointment.appointment_id);
+      
+      Alert.alert('Success', 'Your appointment has been cancelled.');
+      
+      // Go back since the appointment is deleted
+      goBack();
     } catch (err: any) {
       console.error('Error cancelling appointment:', err);
-      alert(err.message || 'Failed to cancel appointment. Please try again.');
+      Alert.alert('Error', err.message || 'Failed to cancel appointment. Please try again.');
     } finally {
       setIsCancelling(false);
     }

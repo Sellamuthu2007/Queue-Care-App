@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, Platform, Text, TouchableOpacity } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { useAppNavigation } from '../../context/NavigationContext';
+import { useAppointments } from '../../context/AppointmentContext';
 import { apiRequest } from '../../services/api';
 import HomeHeader from '../../components/home/HomeHeader';
 import AppointmentHero, { Appointment } from '../../components/home/AppointmentHero';
@@ -14,6 +15,7 @@ import BottomNavigation, { TabName } from '../../components/home/BottomNavigatio
 export const HomeScreen = () => {
   const { user, logout } = useAuth();
   const { currentScreen, navigate } = useAppNavigation();
+  const { appointments: contextAppointments, fetchAppointments, isLoading: isContextLoading } = useAppointments();
   
   const [activeTab, setActiveTab] = useState<TabName>('home');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -32,38 +34,40 @@ export const HomeScreen = () => {
     }
   };
 
-  const fetchAppointments = async () => {
-    try {
-      setHeroState('loading');
-      const data = await apiRequest('/appointments/me');
-      
-      // Filter only active appointments (not cancelled or completed) to present in Upcoming card
-      const active = Array.isArray(data) ? data.filter((apt: any) => apt.status !== 'Cancelled' && apt.status !== 'Completed') : [];
-      
-      if (active.length === 0) {
-        setAppointments([]);
-        setHeroState('empty');
-      } else {
-        console.log('[DEBUG] Raw Active Appointments:', JSON.stringify(active, null, 2));
-        const mapped: Appointment[] = active.map((apt: any) => ({
-          id: apt.appointment_id,
-          specialization: apt.doctor_specialization || apt.department,
-          hospitalName: apt.hospital_name,
-          location: 'New Delhi',
-          date: apt.appointment_date,
-          time: apt.appointment_time,
-          tokenNumber: apt.appointment_id ? apt.appointment_id.slice(0, 8).toUpperCase() : 'N/A',
-          status: apt.status
-        }));
-        console.log('[DEBUG] Mapped Appointments:', JSON.stringify(mapped, null, 2));
-        setAppointments(mapped);
-        setHeroState('normal');
+  useEffect(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    // Filter only active appointments (not cancelled or completed) scheduled for today or the future
+    const active = contextAppointments.filter((apt: any) => {
+      if (apt.status === 'Cancelled' || apt.status === 'Completed') {
+        return false;
       }
-    } catch (err) {
-      console.error('Error fetching dashboard appointments:', err);
-      setHeroState('error');
+      const aptDate = apt.appointment_date ? apt.appointment_date.split('T')[0] : '';
+      return aptDate >= todayStr;
+    });
+    
+    if (active.length === 0) {
+      setAppointments([]);
+      setHeroState(isContextLoading ? 'loading' : 'empty');
+    } else {
+      const mapped: Appointment[] = active.map((apt: any) => ({
+        id: apt.appointment_id,
+        specialization: apt.doctor_specialization || apt.department,
+        hospitalName: apt.hospital_name,
+        location: 'New Delhi',
+        date: apt.appointment_date,
+        time: apt.appointment_time,
+        tokenNumber: apt.appointment_id ? apt.appointment_id.slice(0, 8).toUpperCase() : 'N/A',
+        status: apt.status
+      }));
+      setAppointments(mapped);
+      setHeroState('normal');
     }
-  };
+  }, [contextAppointments, isContextLoading]);
 
   useEffect(() => {
     if (currentScreen === 'Home') {
@@ -91,20 +95,13 @@ export const HomeScreen = () => {
     }
   };
 
-  // Determine Initials from User name or email
-  const getUserInitials = (): string => {
-    if (!user) return 'QC';
-    if (user.name) {
-      const parts = user.name.trim().split(/\s+/);
-      if (parts.length >= 2) {
-        return (parts[0][0] + parts[1][0]).toUpperCase();
-      }
-      return parts[0].slice(0, 2).toUpperCase();
+  const getUserInitials = () => {
+    if (!user || !user.name) return 'U';
+    const parts = user.name.split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
-    if (user.email) {
-      return user.email.slice(0, 2).toUpperCase();
-    }
-    return 'QC';
+    return user.name.slice(0, 2).toUpperCase();
   };
 
   return (
@@ -121,7 +118,7 @@ export const HomeScreen = () => {
         <AppointmentHero
           appointments={appointments}
           state={heroState}
-          onRetry={fetchAppointments}
+          onRetry={() => fetchAppointments(true)}
           onBookPress={handleBookPress}
           onDetailsPress={handleDetailsPress}
         />
