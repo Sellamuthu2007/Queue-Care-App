@@ -30,3 +30,17 @@ func MarkNotificationsRead(c *fiber.Ctx) error {
 		"message": "All notifications marked as read",
 	})
 }
+
+func DeleteNotification(c *fiber.Ctx) error {
+	userID := c.Locals("userID").(string)
+	id := c.Params("id")
+
+	err := repository.DeleteNotification(id, userID)
+	if err != nil {
+		return errors.SendError(c, fiber.StatusInternalServerError, "DB_ERROR", err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "Notification deleted successfully",
+	})
+}

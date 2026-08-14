@@ -35,3 +35,9 @@ func MarkAllNotificationsAsRead(userID string) error {
 	_, err := db.DB.Exec(query, userID)
 	return err
 }
+
+func DeleteNotification(id string, userID string) error {
+	query := `DELETE FROM notifications WHERE id = $1 AND user_id = $2`
+	_, err := db.DB.Exec(query, id, userID)
+	return err
+}

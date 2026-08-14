@@ -24,38 +24,50 @@ interface Appointment {
   status: string;
 }
 
+import { useAppointments } from '../../context/AppointmentContext';
+
 export const BookingsListScreen: React.FC = () => {
   const { navigate, goBack } = useAppNavigation();
+  const { appointments: contextAppointments, fetchAppointments: fetchContextAppointments, isLoading: isContextLoading } = useAppointments();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
 
-  const fetchBookings = async () => {
-    try {
-      setIsLoading(true);
-      setIsError(false);
-      const data = await apiRequest('/appointments/me');
-      
-      // Map API response keys to UI components format
-      const mapped = data.map((apt: any) => ({
-        id: apt.appointment_id,
-        specialization: apt.doctor_specialization || apt.department,
-        doctorName: apt.doctor_name,
-        hospitalName: apt.hospital_name,
-        location: 'New Delhi',
-        date: apt.appointment_date,
-        time: apt.appointment_time,
-        tokenNumber: apt.appointment_id ? apt.appointment_id.slice(0, 8).toUpperCase() : 'N/A',
-        status: apt.status,
-      }));
+  useEffect(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
 
-      setAppointments(mapped);
-    } catch (err) {
-      console.error('Error fetching all bookings:', err);
-      setIsError(true);
-    } finally {
-      setIsLoading(false);
-    }
+    // Filter only active appointments (not cancelled or completed) scheduled for today or the future
+    const active = contextAppointments.filter((apt: any) => {
+      if (apt.status === 'Cancelled' || apt.status === 'Completed') {
+        return false;
+      }
+      const aptDate = apt.appointment_date ? apt.appointment_date.split('T')[0] : '';
+      return aptDate >= todayStr;
+    });
+
+    // Map API response keys to UI components format
+    const mapped = active.map((apt: any) => ({
+      id: apt.appointment_id,
+      specialization: apt.doctor_specialization || apt.department,
+      doctorName: apt.doctor_name,
+      hospitalName: apt.hospital_name,
+      location: 'New Delhi',
+      date: apt.appointment_date,
+      time: apt.appointment_time,
+      tokenNumber: apt.appointment_id ? apt.appointment_id.slice(0, 8).toUpperCase() : 'N/A',
+      status: apt.status,
+    }));
+
+    setAppointments(mapped);
+    setIsLoading(isContextLoading && mapped.length === 0);
+  }, [contextAppointments, isContextLoading]);
+
+  const fetchBookings = () => {
+    fetchContextAppointments(true);
   };
 
   useEffect(() => {

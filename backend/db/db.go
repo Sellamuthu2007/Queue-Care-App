@@ -5,6 +5,7 @@ import (
 	"log"
 	"sort"
 	"strings"
+	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -25,9 +26,32 @@ func InitDB(databaseURL string) {
 	DB = db
 	log.Println("Database connection established. Running migrations...")
 	runMigrations()
+
+	log.Println("Starting background cleanup scheduler...")
+	StartCleanupScheduler()
 }
 
 func runMigrations() {
+	// Create schema_migrations table if not exists
+	_, err := DB.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
+		version VARCHAR(255) PRIMARY KEY
+	);`)
+	if err != nil {
+		log.Fatalf("Failed to create schema_migrations table: %v", err)
+	}
+
+	// Fetch already executed migrations
+	var executed []string
+	err = DB.Select(&executed, "SELECT version FROM schema_migrations")
+	if err != nil {
+		log.Fatalf("Failed to query executed migrations: %v", err)
+	}
+
+	executedMap := make(map[string]bool)
+	for _, version := range executed {
+		executedMap[version] = true
+	}
+
 	entries, err := migrationFiles.ReadDir("migrations")
 	if err != nil {
 		log.Fatalf("Failed to read migrations directory: %v", err)
@@ -43,6 +67,11 @@ func runMigrations() {
 	sort.Strings(files)
 
 	for _, file := range files {
+		if executedMap[file] {
+			log.Printf("Migration %s already executed, skipping.", file)
+			continue
+		}
+
 		log.Printf("Executing migration: %s", file)
 		content, err := migrationFiles.ReadFile("migrations/" + file)
 		if err != nil {
@@ -60,6 +89,12 @@ func runMigrations() {
 			log.Fatalf("Migration failed (%s): %v", file, err)
 		}
 
+		_, err = tx.Exec("INSERT INTO schema_migrations (version) VALUES ($1)", file)
+		if err != nil {
+			_ = tx.Rollback()
+			log.Fatalf("Failed to record migration version for %s: %v", file, err)
+		}
+
 		err = tx.Commit()
 		if err != nil {
 			log.Fatalf("Failed to commit migration %s: %v", file, err)
@@ -67,4 +102,33 @@ func runMigrations() {
 	}
 
 	log.Println("All migrations completed successfully.")
+}
+
+func StartCleanupScheduler() {
+	go func() {
+		// Run once immediately on startup
+		cleanupOldAppointments()
+
+		// Run periodically (every 12 hours)
+		ticker := time.NewTicker(12 * time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			cleanupOldAppointments()
+		}
+	}()
+}
+
+func cleanupOldAppointments() {
+	log.Println("Running automated cleanup for past appointments...")
+	// Delete appointments where appointment_date is in the past (yesterday or older)
+	query := `DELETE FROM appointments WHERE appointment_date < CURRENT_DATE`
+	result, err := DB.Exec(query)
+	if err != nil {
+		log.Printf("Error cleaning up old appointments: %v", err)
+		return
+	}
+	rows, err := result.RowsAffected()
+	if err == nil && rows > 0 {
+		log.Printf("Cleaned up %d old appointments", rows)
+	}
 }

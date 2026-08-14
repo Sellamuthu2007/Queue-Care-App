@@ -98,8 +98,7 @@ func GetAppointmentByID(id string, patientID string) (*models.Appointment, error
 }
 
 func CancelAppointment(id string, patientID string) error {
-	query := `UPDATE appointments SET status = 'Cancelled', updated_at = NOW() 
-	          WHERE id = $1 AND patient_id = $2`
+	query := `DELETE FROM appointments WHERE id = $1 AND patient_id = $2`
 	_, err := db.DB.Exec(query, id, patientID)
 	return err
 }

@@ -63,6 +63,35 @@ export const NotificationsScreen: React.FC = () => {
     }
   };
 
+  const handleDeleteNotification = async (id: string) => {
+    try {
+      await apiRequest(`/notifications/${id}`, { method: 'DELETE' });
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch (err) {
+      console.error('Error deleting notification:', err);
+      Alert.alert('Error', 'Failed to delete notification.');
+    }
+  };
+
+  const handleLongPress = (item: Notification) => {
+    Alert.alert(
+      'Delete Notification',
+      'Are you sure you want to delete this notification?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => handleDeleteNotification(item.id),
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   useEffect(() => {
     fetchNotifications();
   }, []);
@@ -102,10 +131,14 @@ export const NotificationsScreen: React.FC = () => {
 
   const renderNotificationItem = ({ item }: { item: Notification }) => {
     return (
-      <View style={[
-        styles.card,
-        !item.is_read ? styles.cardUnread : styles.cardRead
-      ]}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onLongPress={() => handleLongPress(item)}
+        style={[
+          styles.card,
+          !item.is_read ? styles.cardUnread : styles.cardRead
+        ]}
+      >
         <View style={styles.cardHeader}>
           <View style={styles.iconContainer}>
             <Text style={styles.iconText}>{getNotificationIcon(item.type)}</Text>
@@ -117,7 +150,7 @@ export const NotificationsScreen: React.FC = () => {
           {!item.is_read && <View style={styles.unreadIndicator} />}
         </View>
         <Text style={styles.notifMessage}>{item.message}</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
