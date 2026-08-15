@@ -47,7 +47,10 @@ export const refreshSession = async (): Promise<RefreshSessionResult> => {
 
   const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Bypass-Tunnel-Reminder': 'true',
+    },
     body: JSON.stringify({ refresh_token: refreshToken }),
   });
 

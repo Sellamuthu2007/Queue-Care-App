@@ -1,0 +1,54 @@
+TIME: 2026-08-13T12:27:47+05:30
+Executed in DB: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Files in dir: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Skipped (already run): [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Executed (new run): []
+
+TIME: 2026-08-13T12:39:17+05:30
+Executed in DB: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Files in dir: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Skipped (already run): [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Executed (new run): []
+
+TIME: 2026-08-13T12:43:56+05:30
+Executed in DB: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Files in dir: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Skipped (already run): [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Executed (new run): []
+
+TIME: 2026-08-13T20:28:42+05:30
+Executed in DB: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Files in dir: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Skipped (already run): [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Executed (new run): []
+
+TIME: 2026-08-14T05:21:08+05:30
+Executed in DB: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Files in dir: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Skipped (already run): [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Executed (new run): []
+
+TIME: 2026-08-15T03:10:04+05:30
+Executed in DB: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Files in dir: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Skipped (already run): [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Executed (new run): []
+
+TIME: 2026-08-15T08:55:05+05:30
+Executed in DB: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Files in dir: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Skipped (already run): [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Executed (new run): []
+
+TIME: 2026-08-15T09:04:08+05:30
+Executed in DB: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Files in dir: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Skipped (already run): [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Executed (new run): []
+
+TIME: 2026-08-15T10:13:32+05:30
+Executed in DB: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Files in dir: [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Skipped (already run): [0001_create_users.sql 0002_create_otp_verifications.sql 0003_create_otp_verification_sessions.sql 0004_create_hospital_doctor_appointment.sql 0005_add_profile_fields_to_users.sql 0006_create_notifications.sql 0007_create_reports.sql 0008_cleanup_duplicates.sql]
+Executed (new run): []
+
