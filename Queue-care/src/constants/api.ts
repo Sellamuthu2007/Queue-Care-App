@@ -8,7 +8,7 @@ const getDevApiUrl = () => {
     return 'http://127.0.0.1:8080';
   }
   // On mobile, use your active localtunnel address
-  return 'https://alsuyn-ip-223-239-59-118.tunnelmole.net';
+  return 'https://8vdvse-ip-106-192-167-113.tunnelmole.net';
 };
 
 const DEV_API_URL = getDevApiUrl();

@@ -35,6 +35,13 @@ type Appointment struct {
 	MedicalPreviousVisit     bool      `db:"medical_previous_visit" json:"medical_previous_visit"`
 	MedicalInsuranceAvailable bool      `db:"medical_insurance_available" json:"medical_insurance_available"`
 	MedicalInsuranceProvider  string    `db:"medical_insurance_provider" json:"medical_insurance_provider"`
+	// Workflow timestamps
+	BookedAt                  *time.Time `db:"booked_at" json:"booked_at,omitempty"`
+	ConfirmedAt               *time.Time `db:"confirmed_at" json:"confirmed_at,omitempty"`
+	CheckedInAt               *time.Time `db:"checked_in_at" json:"checked_in_at,omitempty"`
+	QueueEnteredAt            *time.Time `db:"queue_entered_at" json:"queue_entered_at,omitempty"`
+	ConsultationStartedAt     *time.Time `db:"consultation_started_at" json:"consultation_started_at,omitempty"`
+	CompletedAt               *time.Time `db:"completed_at" json:"completed_at,omitempty"`
 	// Joins (only loaded in detail responses, optional)
 	DoctorName               string    `db:"doctor_name" json:"doctor_name,omitempty"`
 	DoctorSpecialization     string    `db:"doctor_specialization" json:"doctor_specialization,omitempty"`

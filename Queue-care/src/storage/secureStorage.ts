@@ -105,9 +105,40 @@ export const removeUser = async (): Promise<void> => {
 };
 
 export const clearTokens = async (): Promise<void> => {
-  await Promise.all([
-    removeAccessToken(),
-    removeRefreshToken(),
-    removeUser(),
-  ]);
+  await removeAccessToken();
+  await removeRefreshToken();
+  await removeUser();
+  await removeActiveConsultation();
+};
+
+export const saveActiveConsultation = async (consultation: any): Promise<void> => {
+  const data = JSON.stringify(consultation);
+  if (Platform.OS === 'web' || isServer) {
+    store.setItem('active_consultation', data);
+  } else {
+    await store.setItemAsync('active_consultation', data);
+  }
+};
+
+export const getActiveConsultation = async (): Promise<any | null> => {
+  let json: string | null;
+  if (Platform.OS === 'web' || isServer) {
+    json = store.getItem('active_consultation');
+  } else {
+    json = await store.getItemAsync('active_consultation');
+  }
+  if (!json) return null;
+  try {
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+};
+
+export const removeActiveConsultation = async (): Promise<void> => {
+  if (Platform.OS === 'web' || isServer) {
+    store.removeItem('active_consultation');
+  } else {
+    await store.deleteItemAsync('active_consultation');
+  }
 };

@@ -13,11 +13,12 @@ import BookingsListScreen from '../screens/home/BookingsListScreen';
 import NotificationsScreen from '../screens/home/NotificationsScreen';
 import ReportsScreen from '../screens/home/ReportsScreen';
 import ReportDetailsScreen from '../screens/home/ReportDetailsScreen';
+import StaffHomeScreen from '../screens/staff/StaffHomeScreen';
 import { NavigationProvider, useAppNavigation } from '../context/NavigationContext';
 import { apiRequest } from '../services/api';
 
 export const RootNavigator = () => {
-  const { isAuthenticated, isLoading, login } = useAuth();
+  const { isAuthenticated, isLoading, login, user } = useAuth();
   const [isProcessingRedirect, setIsProcessingRedirect] = useState(false);
 
   useEffect(() => {
@@ -86,7 +87,7 @@ export const RootNavigator = () => {
 
   return isAuthenticated ? (
     <NavigationProvider>
-      <AuthenticatedScreens />
+      {user?.role === 'staff' ? <StaffAuthenticatedScreens /> : <AuthenticatedScreens />}
     </NavigationProvider>
   ) : (
     <LoginScreen />
@@ -122,6 +123,18 @@ const AuthenticatedScreens = () => {
     default:
       return <HomeScreen />;
   }
+};
+
+const StaffAuthenticatedScreens = () => {
+  const { currentScreen, navigate } = useAppNavigation();
+
+  useEffect(() => {
+    if (currentScreen !== 'StaffHome') {
+      navigate('StaffHome');
+    }
+  }, [currentScreen]);
+
+  return <StaffHomeScreen />;
 };
 
 const styles = StyleSheet.create({

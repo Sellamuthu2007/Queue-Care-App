@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"os"
 	"queue-care-backend/db"
 	"queue-care-backend/models"
 )
@@ -12,6 +13,13 @@ func GetOrCreateUserByGoogleID(googleID, email, name, avatarURL string) (*models
 	// Check if user already exists by google_id
 	err := db.DB.Get(&user, "SELECT id, google_id, email, name, avatar_url, role, age, gender, phone, blood_group, address, medical_diseases, medical_medications, medical_insurance_available, medical_insurance_provider, created_at, updated_at FROM users WHERE google_id = $1", googleID)
 	if err == nil {
+		// Staff auto-promotion
+		staffEmail := os.Getenv("STAFF_EMAIL")
+		if email != "" && staffEmail != "" && email == staffEmail && user.Role != "staff" {
+			_, _ = db.DB.Exec("UPDATE users SET role = 'staff', updated_at = NOW() WHERE id = $1", user.ID)
+			user.Role = "staff"
+		}
+
 		// User exists, update user info if required (name/avatar changes)
 		if user.Name != name || user.AvatarURL != avatarURL || user.Email != email {
 			_, err = db.DB.Exec(
@@ -35,6 +43,13 @@ func GetOrCreateUserByGoogleID(googleID, email, name, avatarURL string) (*models
 	// User does not exist, check if user exists by email (to link google_id to existing account if registering with Google)
 	err = db.DB.Get(&user, "SELECT id, google_id, email, name, avatar_url, role, age, gender, phone, blood_group, address, medical_diseases, medical_medications, medical_insurance_available, medical_insurance_provider, created_at, updated_at FROM users WHERE email = $1", email)
 	if err == nil {
+		// Staff auto-promotion
+		staffEmail := os.Getenv("STAFF_EMAIL")
+		if email != "" && staffEmail != "" && email == staffEmail && user.Role != "staff" {
+			_, _ = db.DB.Exec("UPDATE users SET role = 'staff', updated_at = NOW() WHERE id = $1", user.ID)
+			user.Role = "staff"
+		}
+
 		// Link Google ID and update name/avatar
 		_, err = db.DB.Exec(
 			"UPDATE users SET google_id = $1, name = $2, avatar_url = $3, updated_at = NOW() WHERE email = $4",
@@ -53,10 +68,17 @@ func GetOrCreateUserByGoogleID(googleID, email, name, avatarURL string) (*models
 		return nil, err
 	}
 
+	// Staff auto-promotion for brand new registration
+	role := "patient"
+	staffEmail := os.Getenv("STAFF_EMAIL")
+	if email != "" && staffEmail != "" && email == staffEmail {
+		role = "staff"
+	}
+
 	// Brand new user registration
 	err = db.DB.QueryRowx(
-		"INSERT INTO users (google_id, email, name, avatar_url, role) VALUES ($1, $2, $3, $4, 'patient') RETURNING id, google_id, email, name, avatar_url, role, age, gender, phone, blood_group, address, medical_diseases, medical_medications, medical_insurance_available, medical_insurance_provider, created_at, updated_at",
-		googleID, email, name, avatarURL,
+		"INSERT INTO users (google_id, email, name, avatar_url, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, google_id, email, name, avatar_url, role, age, gender, phone, blood_group, address, medical_diseases, medical_medications, medical_insurance_available, medical_insurance_provider, created_at, updated_at",
+		googleID, email, name, avatarURL, role,
 	).StructScan(&user)
 
 	if err != nil {
