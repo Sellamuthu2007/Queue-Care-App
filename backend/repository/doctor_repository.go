@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"queue-care-backend/db"
 	"queue-care-backend/models"
+	"time"
 )
 
 func GetDoctorsByHospital(hospitalID string, specialization string) ([]models.Doctor, error) {
@@ -64,6 +65,67 @@ func GetDoctorByID(id string) (*models.Doctor, error) {
 }
 
 func GetDoctorAvailability(doctorID string, date string) (*models.DoctorAvailabilityResponse, error) {
+	// 1. Fetch doctor specialization details
+	var docInfo struct {
+		Specialization string `db:"specialization"`
+	}
+	err := db.DB.Get(&docInfo, "SELECT specialization FROM doctors WHERE id = $1", doctorID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch doctor specialization for availability ML: %v", err)
+	}
+
+	// 2. Resolve Doctor historical metrics
+	defaultConsultMinutes := 15.0
+	defaultWaitMinutes := 30.0
+	switch docInfo.Specialization {
+	case "Pediatrics":
+		defaultConsultMinutes = 16.0
+		defaultWaitMinutes = 60.0
+	case "Orthopedics":
+		defaultConsultMinutes = 18.0
+		defaultWaitMinutes = 90.0
+	case "Dermatology":
+		defaultConsultMinutes = 12.0
+		defaultWaitMinutes = 45.0
+	case "Cardiology":
+		defaultConsultMinutes = 20.0
+		defaultWaitMinutes = 50.0
+	}
+
+	var docAvgConsultationMinutes float64
+	err = db.DB.Get(&docAvgConsultationMinutes, `
+		SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (completed_at - consultation_started_at))/60), $2) 
+		FROM appointments 
+		WHERE doctor_id = $1 AND status = 'Completed'
+	`, doctorID, defaultConsultMinutes)
+	if err != nil || docAvgConsultationMinutes <= 0 {
+		docAvgConsultationMinutes = defaultConsultMinutes
+	}
+
+	var docAvgWaitMinutes float64
+	err = db.DB.Get(&docAvgWaitMinutes, `
+		SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (consultation_started_at - checked_in_at))/60), $2) 
+		FROM appointments 
+		WHERE doctor_id = $1 AND status = 'Completed'
+	`, doctorID, defaultWaitMinutes)
+	if err != nil || docAvgWaitMinutes <= 0 {
+		docAvgWaitMinutes = defaultWaitMinutes
+	}
+
+	// 3. Parse day_of_week
+	parsedDate, err := time.Parse("2006-01-02", date)
+	var dayOfWeek int
+	if err != nil {
+		dayOfWeek = int(time.Now().Weekday())
+	} else {
+		goWeekday := int(parsedDate.Weekday())
+		if goWeekday == 0 {
+			dayOfWeek = 6 // Sunday is 6 in ML
+		} else {
+			dayOfWeek = goWeekday - 1 // Monday (1) becomes 0, etc.
+		}
+	}
+
 	// Define standard working slots
 	morningSlots := []string{"09:00 AM", "09:20 AM", "09:40 AM", "10:00 AM", "10:20 AM", "10:40 AM", "11:00 AM", "11:20 AM", "11:40 AM", "12:00 PM"}
 	afternoonSlots := []string{"02:00 PM", "02:20 PM", "02:40 PM", "03:00 PM", "03:20 PM", "03:40 PM", "04:00 PM", "04:20 PM", "04:40 PM", "05:00 PM"}
@@ -83,8 +145,47 @@ func GetDoctorAvailability(doctorID string, date string) (*models.DoctorAvailabi
 				return models.SessionAvailability{}, err
 			}
 
-			// Core Queue Care metrics
-			estimatedWait := count * 15 // 15 mins average wait time per patient ahead
+			// Parse slot time (e.g. "09:20 AM") for hour/minute features
+			var hour, minute int
+			var ampm string
+			_, err = fmt.Sscanf(t, "%d:%d %s", &hour, &minute, &ampm)
+			if err == nil {
+				if ampm == "PM" && hour < 12 {
+					hour += 12
+				} else if ampm == "AM" && hour == 12 {
+					hour = 0
+				}
+			} else {
+				_, _ = fmt.Sscanf(t, "%d:%d", &hour, &minute)
+			}
+
+			// Construct dynamic ML features request for this future slot
+			mlReq := &MLPredictRequest{
+				DoctorID:                     doctorID,
+				Specialization:               docInfo.Specialization,
+				DayOfWeek:                    dayOfWeek,
+				AppointmentHour:              hour,
+				AppointmentMinute:            minute,
+				QueuePosition:                count + 1,
+				PatientsAhead:                count,
+				CheckedInAhead:               0, // 0 physical arrivals ahead for future slot checks
+				CurrentQueueLength:           count,
+				SlotBookedCount:              count + 1,
+				CompletedConsultationsToday:  0, // Future date, so no completions yet
+				DoctorAvgConsultationMinutes: docAvgConsultationMinutes,
+				DoctorAvgWaitMinutes:         docAvgWaitMinutes,
+			}
+
+			// Core Queue Care ML prediction
+			var estimatedWait int
+			predWait, err := GetMLWaitTimePrediction(mlReq)
+			if err != nil {
+				// Fallback to baseline
+				estimatedWait = count * 15
+			} else {
+				estimatedWait = int(predWait)
+			}
+
 			isAvailable := count < maxPatients
 
 			slots = append(slots, models.TimeSlot{

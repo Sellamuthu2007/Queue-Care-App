@@ -53,6 +53,20 @@ func GetMyAppointments(c *fiber.Ctx) error {
 		return errors.SendError(c, fiber.StatusInternalServerError, "DB_ERROR", err.Error())
 	}
 
+	// Update each appointment with ML prediction
+	for i := range appointments {
+		apt := &appointments[i]
+		if apt.Status != "Completed" && apt.Status != "Cancelled" {
+			mlReq, err := repository.GetMLFeaturesForAppointment(apt.ID)
+			if err == nil {
+				predWait, err := repository.GetMLWaitTimePrediction(mlReq)
+				if err == nil {
+					apt.EstimatedWait = int(predWait)
+				}
+			}
+		}
+	}
+
 	return c.JSON(appointments)
 }
 
@@ -66,6 +80,17 @@ func GetAppointmentDetails(c *fiber.Ctx) error {
 	apt, err := repository.GetAppointmentByID(id, patientID)
 	if err != nil {
 		return errors.SendError(c, fiber.StatusNotFound, "NOT_FOUND", "Appointment details not found")
+	}
+
+	// Update with ML prediction
+	if apt.Status != "Completed" && apt.Status != "Cancelled" {
+		mlReq, err := repository.GetMLFeaturesForAppointment(apt.ID)
+		if err == nil {
+			predWait, err := repository.GetMLWaitTimePrediction(mlReq)
+			if err == nil {
+				apt.EstimatedWait = int(predWait)
+			}
+		}
 	}
 
 	return c.JSON(apt)
@@ -190,6 +215,20 @@ func StaffGetTodayQueue(c *fiber.Ctx) error {
 	queue, err := repository.GetTodayQueue(doctorID, hospitalID)
 	if err != nil {
 		return errors.SendError(c, fiber.StatusInternalServerError, "DB_ERROR", err.Error())
+	}
+
+	// Update each queue entry with ML prediction
+	for i := range queue {
+		apt := &queue[i]
+		if apt.Status != "Completed" && apt.Status != "Cancelled" {
+			mlReq, err := repository.GetMLFeaturesForAppointment(apt.ID)
+			if err == nil {
+				predWait, err := repository.GetMLWaitTimePrediction(mlReq)
+				if err == nil {
+					apt.EstimatedWait = int(predWait)
+				}
+			}
+		}
 	}
 
 	return c.JSON(queue)

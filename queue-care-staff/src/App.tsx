@@ -79,7 +79,7 @@ const extractApiError = (error: any): string => {
 export default function App() {
   // Config
   const [apiUrl, setApiUrl] = useState(() => {
-    return localStorage.getItem('qc_staff_api_url') || 'https://8vdvse-ip-106-192-167-113.tunnelmole.net';
+    return localStorage.getItem('qc_staff_api_url') || 'https://g9ikkt-ip-171-79-61-126.tunnelmole.net';
   });
   const [showConfig, setShowConfig] = useState(false);
 

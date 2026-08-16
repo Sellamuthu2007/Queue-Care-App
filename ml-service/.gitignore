@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+pip-selfcheck.json
+
+# Model files & training checkpoints
+# We ignore serialized models but keep the models/ directory tracked
+models/*
+!models/.gitkeep
+
+# Evaluation results & generated plots
+# We ignore generated outputs but keep the results/ directory tracked
+results/*
+!results/.gitkeep
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
