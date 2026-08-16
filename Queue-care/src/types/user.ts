@@ -3,7 +3,7 @@ export interface User {
   email: string;
   name?: string;
   avatar_url?: string;
-  role: 'patient' | 'doctor' | 'nurse' | 'receptionist' | 'hospital_admin';
+  role: 'patient' | 'doctor' | 'nurse' | 'receptionist' | 'hospital_admin' | 'staff';
   age?: number;
   gender?: string;
   phone?: string;

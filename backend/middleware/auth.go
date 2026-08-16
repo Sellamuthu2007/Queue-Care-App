@@ -38,3 +38,11 @@ func AuthRequired(c *fiber.Ctx) error {
 
 	return c.Next()
 }
+
+func StaffRequired(c *fiber.Ctx) error {
+	role := c.Locals("role")
+	if role != "staff" {
+		return errors.SendError(c, fiber.StatusForbidden, "FORBIDDEN", "Staff authorization required")
+	}
+	return c.Next()
+}

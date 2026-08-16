@@ -8,7 +8,7 @@ const getDevApiUrl = () => {
     return 'http://127.0.0.1:8080';
   }
   // On mobile, use your active localtunnel address
-  return 'https://eager-dancers-matter.loca.lt';
+  return 'https://g9ikkt-ip-171-79-61-126.tunnelmole.net';
 };
 
 const DEV_API_URL = getDevApiUrl();

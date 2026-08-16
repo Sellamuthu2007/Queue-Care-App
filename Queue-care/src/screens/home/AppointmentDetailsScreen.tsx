@@ -6,7 +6,8 @@ import {
   ScrollView, 
   TouchableOpacity, 
   ActivityIndicator,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppNavigation } from '../../context/NavigationContext';
@@ -95,6 +96,13 @@ export const AppointmentDetailsScreen = () => {
 
   useEffect(() => {
     fetchAppointmentDetails();
+
+    // Polling refetch every 10 seconds for real-time status sync
+    const interval = setInterval(() => {
+      fetchAppointmentDetails();
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [appointmentId]);
 
   const handleCancelPress = () => {
@@ -163,20 +171,21 @@ export const AppointmentDetailsScreen = () => {
         <View style={styles.tokenCard}>
           <View style={styles.tokenHeader}>
             <View>
-              <Text style={styles.tokenLabel}>Token Number</Text>
-              <Text style={styles.tokenValue}>#{shortAptId}</Text>
+              <Text style={styles.tokenLabel}>Queue Token</Text>
+              <Text style={styles.tokenValue}>#{appointment.queue_position}</Text>
+              <Text style={styles.tokenRef}>Ref: {shortAptId}</Text>
             </View>
             <View style={[
               styles.statusLabelBadge,
               isCancelled && styles.statusBadgeCancelled,
               appointment.status === 'Completed' && styles.statusBadgeCompleted,
-              (appointment.status === 'In Queue' || appointment.status === 'Consultation Started') && styles.statusBadgeActive
+              (appointment.status === 'In Queue' || appointment.status === 'Consultation Started' || appointment.status === 'Checked In') && styles.statusBadgeActive
             ]}>
               <Text style={[
                 styles.statusLabelText,
                 isCancelled && styles.statusTextCancelled,
                 appointment.status === 'Completed' && styles.statusTextCompleted,
-                (appointment.status === 'In Queue' || appointment.status === 'Consultation Started') && styles.statusTextActive
+                (appointment.status === 'In Queue' || appointment.status === 'Consultation Started' || appointment.status === 'Checked In') && styles.statusTextActive
               ]}>
                 {appointment.status}
               </Text>
@@ -184,6 +193,28 @@ export const AppointmentDetailsScreen = () => {
           </View>
 
           <View style={styles.tokenDivider} />
+
+          {/* QR Code Container */}
+          {!isCancelled && appointment.status !== 'Completed' && (
+            <View style={styles.qrContainer}>
+              <Text style={styles.qrTitle}>YOUR QUEUE TOKEN</Text>
+              <Text style={styles.qrTokenText}>#{appointment.queue_position}</Text>
+              
+              <View style={styles.qrWrapper}>
+                <Image
+                  source={{
+                    uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=QUEUECARE:APPOINTMENT:${appointment.appointment_id}`
+                  }}
+                  style={styles.qrImage}
+                  resizeMode="contain"
+                />
+              </View>
+              
+              <Text style={styles.qrHelper}>Show this QR to hospital staff</Text>
+            </View>
+          )}
+
+          {!isCancelled && appointment.status !== 'Completed' && <View style={styles.tokenDivider} /> }
 
           {/* Core queue position calculations */}
           {!isCancelled && appointment.status !== 'Completed' && (
@@ -686,6 +717,53 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  tokenRef: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  qrContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 15,
+    padding: 10,
+  },
+  qrTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#475569',
+    letterSpacing: 0.8,
+    marginBottom: 5,
+  },
+  qrTokenText: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#0F766E',
+    marginBottom: 15,
+  },
+  qrWrapper: {
+    backgroundColor: '#FFFFFF',
+    padding: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+    marginBottom: 15,
+  },
+  qrImage: {
+    width: 170,
+    height: 170,
+  },
+  qrHelper: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '600',
   },
 });
 

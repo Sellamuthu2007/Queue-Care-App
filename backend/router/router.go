@@ -74,5 +74,14 @@ func SetupRoutes(app *fiber.App) {
 	// Report endpoints
 	authenticated.Get("/reports", handler.GetMyReports)
 	authenticated.Get("/reports/:id", handler.GetReportDetails)
+
+	// Staff endpoints
+	staff := authenticated.Group("/staff", middleware.StaffRequired)
+	staff.Post("/appointments/:id/check-in", handler.StaffCheckInAppointment)
+	staff.Post("/appointments/:id/consultation-scan", handler.StaffConsultationScan)
+	staff.Post("/appointments/:id/status", handler.StaffUpdateAppointmentStatus)
+	staff.Get("/queue", handler.StaffGetTodayQueue)
+	staff.Get("/queue/today", handler.StaffGetTodayHospitalQueue)
+	staff.Get("/current-consultation", handler.StaffGetCurrentConsultation)
 }
 

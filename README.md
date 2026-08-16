@@ -5,22 +5,35 @@ Queue Care is a patient-flow management platform. This repository contains the c
 ## 🛠 Tech Stack Architecture
 
 ```
-React Native App (Thin Client)
-       │
-       │ HTTP POST /api/v1/auth/google (Google ID Token)
-       ▼
-   Go Fiber Backend
-       │
-       ├─── Verify Google Token ➡️ Google OAuth API
-       │
-       ├─── User lookup / register (SQLx Queries)
-       ▼
-   PostgreSQL / Supabase Database (Project: velrytehextbrudkrszv)
+   ┌────────────────────────────────────────────────────────┐
+   │                  React Native App                      │
+   │                   (Thin Client)                        │
+   └──────────────────────────┬─────────────────────────────┘
+                              │
+               HTTP Requests  │ (Auth / Users / Queue APIs)
+                              ▼
+   ┌────────────────────────────────────────────────────────┐
+   │                  Go Fiber Backend                      │
+   └───────────────────┬───────────────┬────────────────────┘
+                       │               │
+       Verify Token    │               │ Query / Predict
+                       ▼               ▼
+   ┌───────────────────────┐       ┌────────────────────────┐
+   │ Google OAuth API      │       │ FastAPI ML Service     │
+   │ (Identity Validation) │       │ (XGBoost Predictions)  │
+   └───────────────────────┘       └────────────────────────┘
+                       │
+      Read/Write Logs  │
+                       ▼
+   ┌────────────────────────────────────────────────────────┐
+   │             PostgreSQL Database (Supabase)             │
+   └────────────────────────────────────────────────────────┘
 ```
 
 * **Mobile Frontend:** React Native (Expo) with TS, React Navigation, Secure Store abstraction, and auto-refresh interceptors.
-* **Backend:** Go (Fiber v2 web framework) using SQLx database library with `pgx` driver, official Google Token validation (`google.golang.org/api/idtoken`), and signed JWT session tokens.
-* **Database:** PostgreSQL (with embedded migrations for users).
+* **Go Backend:** Go (Fiber v2 web framework) using SQLx database library with `pgx` driver, official Google Token validation (`google.golang.org/api/idtoken`), and signed JWT session tokens.
+* **ML Microservice:** Python (FastAPI + XGBoost Regressor) delivering real-time patient wait-time prediction analytics.
+* **Database:** PostgreSQL hosted on Supabase (with embedded migrations for users).
 
 ---
 
@@ -57,6 +70,16 @@ React Native App (Thin Client)
 * `Queue-care/src/context/` - AuthContext session provider.
 * `Queue-care/src/storage/` - Secure storage client.
 * `Queue-care/src/utils/` - Error converters.
+
+### Python Machine Learning Service
+
+* `ml-service/main.py` - FastAPI application serving inference endpoints.
+* `ml-service/train.py` - ML pipeline orchestrating validation, training, and artifact serialization.
+* `ml-service/evaluate.py` - Standing evaluation performance reporter.
+* `ml-service/predict.py` - Local test script for prediction inference.
+* `ml-service/data/` - Dataset store (synthetic CSV).
+* `ml-service/models/` - Saved model serialization artifacts (joblib).
+* `ml-service/results/` - Feature importance lists and metrics.
 
 ---
 
@@ -98,3 +121,28 @@ npm run start
 ```
 
 *Note: The frontend base API URL dynamically adapts based on the simulator platform (`127.0.0.1` for iOS, and Metro bundler host IP to access the host machine's port 8080 from the Android emulator). Ensure these parameters match your local networking inside `src/constants/api.ts`.*
+
+### 4. Launch the Machine Learning Service
+
+1. Navigate to the ML directory and create a virtual environment:
+   ```bash
+   cd ml-service
+   python -m venv venv
+   # Activate:
+   # Windows: venv\Scripts\activate
+   # macOS/Linux: source venv/bin/activate
+   ```
+2. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run model training to serialize pipeline objects:
+   ```bash
+   python train.py
+   ```
+4. Start the FastAPI microservice:
+   ```bash
+   python main.py
+   ```
+   *Note: The service will listen on port `8000` (http://127.0.0.1:8000).*
+

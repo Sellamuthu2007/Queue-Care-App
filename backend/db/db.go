@@ -2,7 +2,9 @@ package db
 
 import (
 	"embed"
+	"fmt"
 	"log"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -66,11 +68,21 @@ func runMigrations() {
 
 	sort.Strings(files)
 
+	// Write diagnostic info to a log file
+	diagInfo := fmt.Sprintf("TIME: %s\n", time.Now().Format(time.RFC3339))
+	diagInfo += fmt.Sprintf("Executed in DB: %v\n", executed)
+	diagInfo += fmt.Sprintf("Files in dir: %v\n", files)
+	
+	var executedList []string
+	var skippedList []string
+
 	for _, file := range files {
 		if executedMap[file] {
+			skippedList = append(skippedList, file)
 			log.Printf("Migration %s already executed, skipping.", file)
 			continue
 		}
+		executedList = append(executedList, file)
 
 		log.Printf("Executing migration: %s", file)
 		content, err := migrationFiles.ReadFile("migrations/" + file)
@@ -99,6 +111,15 @@ func runMigrations() {
 		if err != nil {
 			log.Fatalf("Failed to commit migration %s: %v", file, err)
 		}
+	}
+
+	diagInfo += fmt.Sprintf("Skipped (already run): %v\n", skippedList)
+	diagInfo += fmt.Sprintf("Executed (new run): %v\n\n", executedList)
+	
+	f, _ := os.OpenFile("migration_run.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if f != nil {
+		defer f.Close()
+		_, _ = f.WriteString(diagInfo)
 	}
 
 	log.Println("All migrations completed successfully.")

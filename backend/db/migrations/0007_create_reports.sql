@@ -20,7 +20,7 @@ CREATE INDEX IF NOT EXISTS idx_reports_report_date ON reports(report_date);
 -- Seed initial mock reports for the first user
 INSERT INTO reports (user_id, title, type, description, doctor_name, hospital_name, department, report_date, file_url, file_type)
 SELECT 
-    id, 
+    u.id, 
     'Complete Blood Count', 
     'Lab Test', 
     'Routine hematology evaluation checking cell counts.', 
@@ -30,11 +30,16 @@ SELECT
     NOW() - INTERVAL '1 day', 
     'mock_cbc_report.pdf', 
     'PDF'
-FROM users LIMIT 1 ON CONFLICT DO NOTHING;
+FROM users u
+WHERE u.id = (SELECT id FROM users LIMIT 1)
+  AND NOT EXISTS (
+      SELECT 1 FROM reports r 
+      WHERE r.user_id = u.id AND r.title = 'Complete Blood Count'
+  );
 
 INSERT INTO reports (user_id, title, type, description, doctor_name, hospital_name, department, report_date, file_url, file_type)
 SELECT 
-    id, 
+    u.id, 
     'ECG Report', 
     'Scan', 
     'Electrocardiogram tracing of heart electrical activity.', 
@@ -44,11 +49,16 @@ SELECT
     NOW() - INTERVAL '7 days', 
     'mock_ecg_report.pdf', 
     'PDF'
-FROM users LIMIT 1 ON CONFLICT DO NOTHING;
+FROM users u
+WHERE u.id = (SELECT id FROM users LIMIT 1)
+  AND NOT EXISTS (
+      SELECT 1 FROM reports r 
+      WHERE r.user_id = u.id AND r.title = 'ECG Report'
+  );
 
 INSERT INTO reports (user_id, title, type, description, doctor_name, hospital_name, department, report_date, file_url, file_type)
 SELECT 
-    id, 
+    u.id, 
     'Cardiology Prescription', 
     'Prescription', 
     'Prescribed medications for cardiovascular management.', 
@@ -58,11 +68,16 @@ SELECT
     NOW() - INTERVAL '13 days', 
     'mock_prescription_cardio.pdf', 
     'PDF'
-FROM users LIMIT 1 ON CONFLICT DO NOTHING;
+FROM users u
+WHERE u.id = (SELECT id FROM users LIMIT 1)
+  AND NOT EXISTS (
+      SELECT 1 FROM reports r 
+      WHERE r.user_id = u.id AND r.title = 'Cardiology Prescription'
+  );
 
 INSERT INTO reports (user_id, title, type, description, doctor_name, hospital_name, department, report_date, file_url, file_type)
 SELECT 
-    id, 
+    u.id, 
     'Lipid Profile', 
     'Lab Test', 
     'Cholesterol and triglycerides level assessment.', 
@@ -72,11 +87,16 @@ SELECT
     NOW() - INTERVAL '20 days', 
     'mock_lipid_profile.pdf', 
     'PDF'
-FROM users LIMIT 1 ON CONFLICT DO NOTHING;
+FROM users u
+WHERE u.id = (SELECT id FROM users LIMIT 1)
+  AND NOT EXISTS (
+      SELECT 1 FROM reports r 
+      WHERE r.user_id = u.id AND r.title = 'Lipid Profile'
+  );
 
 INSERT INTO reports (user_id, title, type, description, doctor_name, hospital_name, department, report_date, file_url, file_type)
 SELECT 
-    id, 
+    u.id, 
     'Chest X-Ray', 
     'Scan', 
     'Posterior-anterior view chest radiograph.', 
@@ -86,11 +106,16 @@ SELECT
     NOW() - INTERVAL '25 days', 
     'mock_chest_xray.pdf', 
     'PDF'
-FROM users LIMIT 1 ON CONFLICT DO NOTHING;
+FROM users u
+WHERE u.id = (SELECT id FROM users LIMIT 1)
+  AND NOT EXISTS (
+      SELECT 1 FROM reports r 
+      WHERE r.user_id = u.id AND r.title = 'Chest X-Ray'
+  );
 
 INSERT INTO reports (user_id, title, type, description, doctor_name, hospital_name, department, report_date, file_url, file_type)
 SELECT 
-    id, 
+    u.id, 
     'Cardiology Consultation', 
     'Consultation', 
     'Initial cardiovascular review session findings.', 
@@ -100,11 +125,16 @@ SELECT
     NOW() - INTERVAL '30 days', 
     'mock_consultation_notes.pdf', 
     'PDF'
-FROM users LIMIT 1 ON CONFLICT DO NOTHING;
+FROM users u
+WHERE u.id = (SELECT id FROM users LIMIT 1)
+  AND NOT EXISTS (
+      SELECT 1 FROM reports r 
+      WHERE r.user_id = u.id AND r.title = 'Cardiology Consultation'
+  );
 
 INSERT INTO reports (user_id, title, type, description, doctor_name, hospital_name, department, report_date, file_url, file_type)
 SELECT 
-    id, 
+    u.id, 
     'Vaccination Record', 
     'Vaccination', 
     'Hepatitis B booster vaccine shot verification.', 
@@ -114,11 +144,16 @@ SELECT
     NOW() - INTERVAL '39 days', 
     'mock_vaccination_log.pdf', 
     'PDF'
-FROM users LIMIT 1 ON CONFLICT DO NOTHING;
+FROM users u
+WHERE u.id = (SELECT id FROM users LIMIT 1)
+  AND NOT EXISTS (
+      SELECT 1 FROM reports r 
+      WHERE r.user_id = u.id AND r.title = 'Vaccination Record'
+  );
 
 INSERT INTO reports (user_id, title, type, description, doctor_name, hospital_name, department, report_date, file_url, file_type)
 SELECT 
-    id, 
+    u.id, 
     'Diabetes Screening', 
     'Lab Test', 
     'Fasting blood sugar and HbA1c screening metrics.', 
@@ -128,4 +163,9 @@ SELECT
     NOW() - INTERVAL '46 days', 
     'mock_diabetes_report.pdf', 
     'PDF'
-FROM users LIMIT 1 ON CONFLICT DO NOTHING;
+FROM users u
+WHERE u.id = (SELECT id FROM users LIMIT 1)
+  AND NOT EXISTS (
+      SELECT 1 FROM reports r 
+      WHERE r.user_id = u.id AND r.title = 'Diabetes Screening'
+  );
