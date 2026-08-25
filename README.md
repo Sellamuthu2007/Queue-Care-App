@@ -94,7 +94,7 @@ You need to connect the Go backend to your newly created Supabase database proje
 3. Copy the URI string and replace `[PASSWORD]` with your actual database password.
 4. Open the backend environment file **`backend/.env`** and paste the URI as your `DATABASE_URL`, for example:
    ```ini
-   DATABASE_URL=postgresql://postgres.velrytehextbrudkrszv:[YOUR-PASSWORD]@[YOUR-REGION].pooler.supabase.com:6543/postgres?default_query_exec_mode=cache_describe
+   DATABASE_URL=postgresql://postgres.:[YOUR-PASSWORD]@[YOUR-REGION].pooler.supabase.com:6543/postgres?default_query_exec_mode=cache_describe
    ```
 
 ### 2. Launch the Backend
